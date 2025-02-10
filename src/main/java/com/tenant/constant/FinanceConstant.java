@@ -1,0 +1,93 @@
+package com.tenant.constant;
+
+public class FinanceConstant {
+    public static final String DATE_FORMAT = "dd/MM/yyyy";
+    public static final String DATE_TIME_FORMAT = "dd/MM/yyyy HH:mm:ss";
+
+    public static final String NAME_PATTERN = "^[\\p{L} ]+$";
+    public static final String USERNAME_PATTERN = "^[a-z0-9_]+$";
+    public static final String PASSWORD_PATTERN = "^[a-zA-Z0-9!@#$%^&*()_+-=]+$";
+    public static final String PHONE_PATTERN = "^0[35789][0-9]{8}$";
+    public static final String EMAIL_PATTERN = "^(?!.*[.]{2,})[a-zA-Z0-9.%]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$";
+    public static final String HEX_COLOR_PATTERN = "^#([a-fA-F0-9]{6}|[a-fA-F0-9]{3})$";
+
+    public static final Integer USER_KIND_ADMIN = 1;
+    public static final Integer USER_KIND_MANAGER = 2;
+
+    public static final Integer STATUS_ACTIVE = 1;
+    public static final Integer STATUS_PENDING = 0;
+    public static final Integer STATUS_LOCK = -1;
+    public static final Integer STATUS_DELETE = -2;
+
+    public static final Integer GROUP_KIND_ADMIN = 1;
+    public static final Integer GROUP_KIND_MANAGER = 2;
+
+    public static final Integer MAX_ATTEMPT_FORGET_PWD = 5;
+    public static final int MAX_TIME_FORGET_PWD = 5 * 60 * 1000;
+    public static final Integer MAX_ATTEMPT_LOGIN = 5;
+
+    public static final Boolean AES_ZIP_ENABLE = false;
+
+    public static final Integer CATEGORY_KIND_INCOME = 1;
+    public static final Integer CATEGORY_KIND_EXPENDITURE = 2;
+
+    public static final Integer TRANSACTION_KIND_INCOME = 1;
+    public static final Integer TRANSACTION_KIND_EXPENDITURE = 2;
+
+    public static final Integer TRANSACTION_STATE_CREATED = 1;
+    public static final Integer TRANSACTION_STATE_APPROVE = 2;
+    public static final Integer TRANSACTION_STATE_REJECT = 3;
+    public static final Integer TRANSACTION_STATE_PAID = 4;
+
+    public static final Integer SORT_DATE_ASC = 1;
+    public static final Integer SORT_DATE_DESC = 2;
+    public static final Integer SORT_TRANSACTION_DATE_ASC = 3;
+    public static final Integer SORT_TRANSACTION_DATE_DESC = 4;
+    public static final Integer SORT_DUE_DAYS_ASC = 3;
+    public static final Integer SORT_DUE_DAYS_DESC = 4;
+
+    public static final Integer SERVICE_PERIOD_KIND_FIX_DAY = 1;
+    public static final Integer SERVICE_PERIOD_KIND_MONTH = 2;
+    public static final Integer SERVICE_PERIOD_KIND_YEAR = 3;
+
+    public static final Integer NOTIFICATION_STATE_SENT = 0;
+    public static final Integer NOTIFICATION_STATE_READ = 1;
+
+    public static final Integer KEY_INFORMATION_KIND_SERVER = 1;
+    public static final Integer KEY_INFORMATION_KIND_WEB = 2;
+
+    public static final String PRIVATE_KEY = "private_key";
+    public static final String FINANCE_SECRET_KEY = "finance_secret_key";
+    public static final String KEY_INFORMATION_SECRET_KEY = "key_information_secret_key";
+    public static final String DECRYPT_PASSWORD_SECRET_KEY = "decrypt_password_secret_key";
+
+    public static final Integer SERVICE_KIND_INCOME = 1;
+    public static final Integer SERVICE_KIND_EXPENDITURE = 2;
+
+    public static final Integer PAYMENT_PERIOD_STATE_CREATED = 1;
+    public static final Integer PAYMENT_PERIOD_STATE_APPROVE = 2;
+
+    public static final Integer TASK_STATE_PENDING = 1;
+    public static final Integer TASK_STATE_DONE = 2;
+
+    public static final Integer PERMISSION_KIND_ITEM = 1;
+    public static final Integer PERMISSION_KIND_GROUP = 2;
+
+    public static final Integer IS_PAGED_TRUE = 1;
+    public static final Integer IS_PAGED_FALSE = 0;
+
+    public static final Integer IGNORE_ENTITY_RELATIONSHIP_TRUE = 1;
+    public static final Integer IGNORE_ENTITY_RELATIONSHIP_FALSE = 0;
+
+    public static final Integer BOOLEAN_TRUE = 1;
+    public static final Integer BOOLEAN_FALSE = 0;
+
+    public static final Integer TAG_KIND_TRANSACTION = 1;
+    public static final Integer TAG_KIND_SERVICE = 2;
+    public static final Integer TAG_KIND_KEY_INFORMATION = 3;
+    public static final Integer TAG_KIND_PROJECT = 4;
+
+    private FinanceConstant(){
+        throw new IllegalStateException("Utility class");
+    }
+}
