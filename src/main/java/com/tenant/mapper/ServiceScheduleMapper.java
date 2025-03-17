@@ -2,7 +2,7 @@ package com.tenant.mapper;
 
 import com.tenant.dto.serviceSchedule.ServiceScheduleAdminDto;
 import com.tenant.dto.serviceSchedule.ServiceScheduleDto;
-import com.tenant.model.ServiceSchedule;
+import com.tenant.storage.tenant.model.*;
 import org.mapstruct.*;
 
 import java.util.List;

@@ -4,7 +4,7 @@ import com.tenant.dto.account.KeyWrapperDto;
 import com.tenant.dto.paymentPeriod.PaymentPeriodAdminDto;
 import com.tenant.dto.paymentPeriod.PaymentPeriodDto;
 import com.tenant.form.paymentPeriod.CreatePaymentPeriodForm;
-import com.tenant.model.PaymentPeriod;
+import com.tenant.storage.tenant.model.*;
 import org.mapstruct.*;
 
 import java.util.List;

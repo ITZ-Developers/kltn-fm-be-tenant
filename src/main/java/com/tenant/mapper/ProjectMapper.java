@@ -5,8 +5,8 @@ import com.tenant.dto.project.ProjectAdminDto;
 import com.tenant.dto.project.ProjectDto;
 import com.tenant.form.project.CreateProjectForm;
 import com.tenant.form.project.UpdateProjectForm;
-import com.tenant.model.Project;
-import com.tenant.repository.TaskRepository;
+import com.tenant.storage.tenant.model.*;
+import com.tenant.storage.tenant.repository.TaskRepository;
 import org.mapstruct.*;
 
 import java.util.List;

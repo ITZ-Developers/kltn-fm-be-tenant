@@ -4,7 +4,7 @@ import com.tenant.dto.account.KeyWrapperDto;
 import com.tenant.dto.KeyInformationPermission.KeyInformationPermissionAdminDto;
 import com.tenant.dto.KeyInformationPermission.KeyInformationPermissionDto;
 import com.tenant.dto.account.SubKeyWrapperDto;
-import com.tenant.model.KeyInformationPermission;
+import com.tenant.storage.tenant.model.*;
 import org.mapstruct.*;
 
 import java.util.List;

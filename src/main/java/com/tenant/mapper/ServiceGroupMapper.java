@@ -5,7 +5,7 @@ import com.tenant.dto.serviceGroup.ServiceGroupAdminDto;
 import com.tenant.dto.serviceGroup.ServiceGroupDto;
 import com.tenant.form.serviceGroup.CreateServiceGroupForm;
 import com.tenant.form.serviceGroup.UpdateServiceGroupForm;
-import com.tenant.model.ServiceGroup;
+import com.tenant.storage.tenant.model.*;
 import org.mapstruct.*;
 
 import java.util.List;

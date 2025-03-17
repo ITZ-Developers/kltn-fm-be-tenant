@@ -5,7 +5,7 @@ import com.tenant.dto.category.CategoryAdminDto;
 import com.tenant.dto.category.CategoryDto;
 import com.tenant.form.category.CreateCategoryForm;
 import com.tenant.form.category.UpdateCategoryForm;
-import com.tenant.model.Category;
+import com.tenant.storage.tenant.model.*;
 import org.mapstruct.*;
 
 import java.util.List;

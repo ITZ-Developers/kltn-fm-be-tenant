@@ -1,6 +1,5 @@
 package com.tenant.controller;
 
-import com.tenant.model.Permission;
 import com.tenant.dto.ApiMessageDto;
 import com.tenant.dto.ErrorCode;
 import com.tenant.dto.ResponseListDto;
@@ -8,11 +7,9 @@ import com.tenant.dto.group.GroupAdminDto;
 import com.tenant.form.group.CreateGroupForm;
 import com.tenant.form.group.UpdateGroupForm;
 import com.tenant.mapper.GroupMapper;
-import com.tenant.model.Group;
-import com.tenant.model.criteria.GroupCriteria;
-import com.tenant.repository.AccountRepository;
-import com.tenant.repository.GroupRepository;
-import com.tenant.repository.PermissionRepository;
+import com.tenant.storage.tenant.model.*;
+import com.tenant.storage.tenant.model.criteria.*;
+import com.tenant.storage.tenant.repository.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;

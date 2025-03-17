@@ -6,7 +6,7 @@ import com.tenant.dto.keyInformation.KeyInformationAdminDto;
 import com.tenant.dto.keyInformation.KeyInformationDto;
 import com.tenant.form.keyInformation.CreateKeyInformationForm;
 import com.tenant.form.keyInformation.UpdateKeyInformationForm;
-import com.tenant.model.KeyInformation;
+import com.tenant.storage.tenant.model.*;
 import org.mapstruct.*;
 
 import java.util.List;

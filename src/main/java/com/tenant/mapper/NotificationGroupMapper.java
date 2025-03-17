@@ -5,7 +5,7 @@ import com.tenant.dto.notificationGroup.NotificationGroupAdminDto;
 import com.tenant.dto.notificationGroup.NotificationGroupDto;
 import com.tenant.form.notificationGroup.CreateNotificationGroupForm;
 import com.tenant.form.notificationGroup.UpdateNotificationGroupForm;
-import com.tenant.model.NotificationGroup;
+import com.tenant.storage.tenant.model.*;
 import org.mapstruct.*;
 
 import java.util.List;

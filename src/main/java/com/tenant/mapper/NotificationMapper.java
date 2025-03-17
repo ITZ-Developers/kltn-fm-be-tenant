@@ -4,7 +4,7 @@ import com.tenant.dto.notification.NotificationAdminDto;
 import com.tenant.dto.notification.NotificationDto;
 import com.tenant.form.notification.CreateNotificationForm;
 import com.tenant.form.notification.UpdateNotificationForm;
-import com.tenant.model.Notification;
+import com.tenant.storage.tenant.model.*;
 import org.mapstruct.*;
 
 import java.util.List;

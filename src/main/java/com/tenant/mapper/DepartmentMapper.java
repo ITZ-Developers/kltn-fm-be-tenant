@@ -4,7 +4,7 @@ import com.tenant.dto.department.DepartmentAdminDto;
 import com.tenant.dto.department.DepartmentDto;
 import com.tenant.form.department.CreateDepartmentForm;
 import com.tenant.form.department.UpdateDepartmentForm;
-import com.tenant.model.Department;
+import com.tenant.storage.tenant.model.*;
 import org.mapstruct.*;
 
 import java.util.List;

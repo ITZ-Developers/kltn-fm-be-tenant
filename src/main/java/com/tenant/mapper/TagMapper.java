@@ -6,7 +6,7 @@ import com.tenant.dto.tag.TagAdminDto;
 import com.tenant.dto.tag.TagDto;
 import com.tenant.form.tag.CreateTagForm;
 import com.tenant.form.tag.UpdateTagForm;
-import com.tenant.model.Tag;
+import com.tenant.storage.tenant.model.*;
 import org.mapstruct.*;
 
 import java.util.List;

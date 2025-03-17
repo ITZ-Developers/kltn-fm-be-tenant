@@ -3,7 +3,7 @@ package com.tenant.mapper;
 import com.tenant.form.account.CreateAccountAdminForm;
 import com.tenant.form.account.UpdateAccountAdminForm;
 import com.tenant.form.account.UpdateProfileAdminForm;
-import com.tenant.model.Account;
+import com.tenant.storage.tenant.model.*;
 import com.tenant.dto.account.AccountAdminDto;
 import com.tenant.dto.account.AccountDto;
 import org.mapstruct.*;

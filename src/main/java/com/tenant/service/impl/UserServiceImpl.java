@@ -1,8 +1,8 @@
 package com.tenant.service.impl;
 
 import com.tenant.config.SecurityConstant;
-import com.tenant.model.Account;
-import com.tenant.repository.AccountRepository;
+import com.tenant.storage.tenant.model.*;
+import com.tenant.storage.tenant.repository.*;
 import com.tenant.jwt.FinanceJwt;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;

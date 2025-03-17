@@ -3,7 +3,7 @@ package com.tenant.mapper;
 import com.tenant.dto.account.KeyWrapperDto;
 import com.tenant.dto.taskPermission.TaskPermissionAdminDto;
 import com.tenant.dto.taskPermission.TaskPermissionDto;
-import com.tenant.model.TaskPermission;
+import com.tenant.storage.tenant.model.*;
 import org.mapstruct.*;
 
 import java.util.List;

@@ -1,32 +1,38 @@
 package com.tenant.multitenancy.config;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.tenant.dto.ApiMessageDto;
 import com.tenant.exception.BadRequestException;
-import com.tenant.exception.ForbiddenException;
-import com.tenant.exception.NotFoundException;
-import com.tenant.exception.UnauthorizationException;
-import feign.Request;
 import feign.Response;
 import feign.codec.ErrorDecoder;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+
+@Component
 @Slf4j
 public class CustomFeignErrorDecoder implements ErrorDecoder {
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @Override
     public Exception decode(String methodKey, Response response) {
-        Request request = response.request();
-        String message = response.body() != null ? response.body().toString() : null;
-        switch (response.status()) {
-            case 401:
-                throw new UnauthorizationException("No access to [" + request.httpMethod() + "] " + request.url());
-            case 403:
-                throw new ForbiddenException("No access to [" + request.httpMethod() + "] " + request.url());
-            case 400:
-                throw new BadRequestException(message);
-            case 404:
-                throw new NotFoundException("Not found");
-            default:
-                throw new RuntimeException(message);
+        try (InputStream inputStream = response.body().asInputStream();
+             BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
+            StringBuilder responseBody = new StringBuilder();
+            String line;
+            while ((line = reader.readLine()) != null) {
+                responseBody.append(line);
+            }
+            ApiMessageDto<?> errorResponse = objectMapper.readValue(responseBody.toString(), new TypeReference<>() {});
+            return new BadRequestException(errorResponse.getCode(), errorResponse.getMessage());
+        } catch (Exception e) {
+            return new BadRequestException("[Feign] Unexpected exception: " + e.getMessage());
         }
     }
 }

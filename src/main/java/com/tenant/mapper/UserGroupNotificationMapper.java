@@ -3,7 +3,7 @@ package com.tenant.mapper;
 import com.tenant.dto.account.KeyWrapperDto;
 import com.tenant.dto.userGroupNotification.UserGroupNotificationAdminDto;
 import com.tenant.dto.userGroupNotification.UserGroupNotificationDto;
-import com.tenant.model.UserGroupNotification;
+import com.tenant.storage.tenant.model.*;
 import org.mapstruct.*;
 
 import java.util.List;

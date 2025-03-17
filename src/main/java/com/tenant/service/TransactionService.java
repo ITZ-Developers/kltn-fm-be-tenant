@@ -2,10 +2,8 @@ package com.tenant.service;
 
 import com.tenant.constant.FinanceConstant;
 import com.tenant.mapper.DebitMapper;
-import com.tenant.model.Debit;
-import com.tenant.model.Transaction;
-import com.tenant.model.TransactionHistory;
-import com.tenant.repository.*;
+import com.tenant.storage.tenant.model.*;
+import com.tenant.storage.tenant.repository.*;
 import com.tenant.utils.AESUtils;
 import com.tenant.utils.ConvertUtils;
 import com.tenant.utils.DateUtils;
@@ -102,7 +100,7 @@ public class TransactionService {
         }
     }
 
-    public void updateExpirationDate(com.tenant.model.Service service) {
+    public void updateExpirationDate(com.tenant.storage.tenant.model.Service service) {
         if (!FinanceConstant.SERVICE_PERIOD_KIND_FIX_DAY.equals(service.getPeriodKind())) {
             service.setExpirationDate(calculateExpirationDate(service.getStartDate(), service.getPeriodKind()));
             service.setIsPaid(FinanceConstant.BOOLEAN_FALSE);

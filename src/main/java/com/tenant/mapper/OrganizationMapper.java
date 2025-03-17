@@ -6,7 +6,7 @@ import com.tenant.dto.organization.OrganizationAdminDto;
 import com.tenant.dto.organization.OrganizationDto;
 import com.tenant.form.organization.CreateOrganizationForm;
 import com.tenant.form.organization.UpdateOrganizationForm;
-import com.tenant.model.Organization;
+import com.tenant.storage.tenant.model.*;
 import org.mapstruct.*;
 
 import java.util.List;

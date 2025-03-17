@@ -5,9 +5,9 @@ import com.tenant.dto.account.MyKeyDto;
 import com.tenant.exception.BadRequestException;
 import com.tenant.form.account.*;
 import com.tenant.mapper.AccountMapper;
-import com.tenant.model.Account;
-import com.tenant.model.Department;
-import com.tenant.repository.*;
+import com.tenant.storage.tenant.model.*;
+import com.tenant.storage.tenant.model.criteria.*;
+import com.tenant.storage.tenant.repository.*;
 import com.tenant.service.FinanceApiService;
 import com.tenant.service.KeyService;
 import com.tenant.utils.*;
@@ -17,11 +17,11 @@ import com.tenant.dto.ResponseListDto;
 import com.tenant.dto.account.AccountAdminDto;
 import com.tenant.dto.account.AccountDto;
 import com.tenant.dto.account.AccountForgetPasswordDto;
-import com.tenant.model.Group;
-import com.tenant.model.criteria.AccountCriteria;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Page;
@@ -40,6 +40,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.KeyPair;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.ConcurrentMap;
 
 @RestController
 @RequestMapping("/v1/account")
@@ -64,6 +65,15 @@ public class AccountController extends ABasicController{
     private KeyService keyService;
     @Autowired
     private PasswordEncoder passwordEncoder;
+    @Autowired
+    @Qualifier("applicationConfig")
+    private ConcurrentMap<String, String> concurrentMap;
+    @Value("${aes.secret-key.key-information}")
+    private String keyInformationSecretKey;
+    @Value("${aes.secret-key.finance}")
+    private String financeSecretKey;
+    @Value("${aes.secret-key.decrypt-password}")
+    private String encryptPasswordSecretKey;
 
     @GetMapping(value = "/get/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     @PreAuthorize("hasRole('ACC_V')")
@@ -105,13 +115,6 @@ public class AccountController extends ABasicController{
     @PreAuthorize("hasRole('ACC_C_AD')")
     public ApiMessageDto<String> createAdmin(@Valid @RequestBody CreateAccountAdminForm createAccountAdminForm, BindingResult bindingResult) {
         Integer count = accountRepository.countAllAccounts();
-        String maxAccountString = Utils.getValueFromJsonByKey(getCurrentDbConfig().getLicense(), "max_account");
-        if (maxAccountString != null) {
-            Integer maxAccount = Integer.parseInt(maxAccountString);
-            if (count >= maxAccount) {
-                return makeErrorResponse(null, "Reached the limit");
-            }
-        }
         Account accountByUsername = accountRepository.findFirstByUsername(createAccountAdminForm.getUsername()).orElse(null);
         if (accountByUsername != null) {
             return makeErrorResponse(ErrorCode.ACCOUNT_ERROR_USERNAME_EXISTED, "Username existed");
@@ -359,5 +362,23 @@ public class AccountController extends ABasicController{
         account.setPassword(passwordEncoder.encode(changeProfilePasswordAccountForm.getNewPassword()));
         accountRepository.save(account);
         return makeSuccessResponse(null, "Change profile password success");
+    }
+
+    @PostMapping(value = "/input-key", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ApiMessageDto<String> inputMasterKey(@Valid @RequestBody InputKeyForm inputKeyForm, BindingResult bindingResult) {
+        String decryptFinanceSecretKey = RSAUtils.decrypt(inputKeyForm.getPrivateKey(), financeSecretKey);
+        String decryptKeyInformationSecretKey = RSAUtils.decrypt(inputKeyForm.getPrivateKey(), keyInformationSecretKey);
+        String decryptPasswordSecretKey = RSAUtils.decrypt(inputKeyForm.getPrivateKey(), encryptPasswordSecretKey);
+        if (decryptFinanceSecretKey == null || decryptKeyInformationSecretKey == null || decryptPasswordSecretKey == null) {
+            return makeErrorResponse(ErrorCode.ACCOUNT_ERROR_PRIVATE_KEY_INVALID, "Private key invalid");
+        }
+        concurrentMap.put(FinanceConstant.PRIVATE_KEY, inputKeyForm.getPrivateKey());
+        return makeSuccessResponse(null, "Input key success");
+    }
+
+    @GetMapping(value = "/clear-key", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ApiMessageDto<String> clearMasterKey() {
+        concurrentMap.clear();
+        return makeSuccessResponse(null, "Clear key success");
     }
 }

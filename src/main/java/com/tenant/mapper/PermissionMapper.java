@@ -1,7 +1,7 @@
 package com.tenant.mapper;
 
 import com.tenant.form.permission.CreatePermissionForm;
-import com.tenant.model.Permission;
+import com.tenant.storage.tenant.model.*;
 import com.tenant.dto.permission.PermissionAdminDto;
 import com.tenant.dto.permission.PermissionDto;
 import org.mapstruct.*;

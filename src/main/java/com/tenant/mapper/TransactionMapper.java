@@ -5,7 +5,7 @@ import com.tenant.dto.transaction.TransactionAdminDto;
 import com.tenant.dto.transaction.TransactionDto;
 import com.tenant.form.transaction.CreateTransactionForm;
 import com.tenant.form.transaction.UpdateTransactionForm;
-import com.tenant.model.Transaction;
+import com.tenant.storage.tenant.model.*;
 import org.mapstruct.*;
 
 import java.util.List;

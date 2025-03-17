@@ -2,8 +2,8 @@ package com.tenant.scheduler;
 
 import com.tenant.constant.FinanceConstant;
 import com.tenant.dto.service.ServiceReminderDto;
-import com.tenant.model.*;
-import com.tenant.repository.*;
+import com.tenant.storage.tenant.model.*;
+import com.tenant.storage.tenant.repository.*;
 import com.tenant.service.KeyService;
 import com.tenant.service.TransactionService;
 import com.tenant.utils.AESUtils;

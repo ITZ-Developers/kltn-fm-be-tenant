@@ -34,27 +34,21 @@ import java.util.concurrent.TimeUnit;
 @Component
 @Slf4j
 public class DataSourceBasedMultiTenantConnectionProviderImpl extends AbstractDataSourceBasedMultiTenantConnectionProviderImpl implements ResourceLoaderAware {
-
     private static final long serialVersionUID = 1L;
-
     private LoadingCache<String, DataSource> dataSourcesMtApp;
-
     @Autowired
     TenantDatabaseConfigProperties configProperties;
-
     @Autowired
     private FeignDbConfigAuthService dbConfigAuthService;
-
     @Value("${multitenancy.datasource-cache.maximumSize}")
     private Long maximumSize;
-
     @Value("${multitenancy.datasource-cache.expireAfterAccess}")
     private Integer expireAfterAccess;
-
     @Autowired
     @Qualifier("tenantLiquibaseProperties")
     private LiquibaseProperties liquibaseProperties;
-
+    @Value("${master.api-key}")
+    private String apiSecretKey;
     private ResourceLoader resourceLoader;
 
     @PostConstruct
@@ -71,7 +65,7 @@ public class DataSourceBasedMultiTenantConnectionProviderImpl extends AbstractDa
                 .build(new CacheLoader<String, DataSource>() {
                     public DataSource load(String key) {
                         log.info("====> load tenant has key: " + key);
-                        ApiMessageDto<DbConfigDto> tenant = dbConfigAuthService.getByName(key);
+                        ApiMessageDto<DbConfigDto> tenant = dbConfigAuthService.getByName(key, apiSecretKey);
                         if (tenant == null || !tenant.getResult() || tenant.getData() == null) {
                             throw new RuntimeException("No such tenant: " + key);
                         }

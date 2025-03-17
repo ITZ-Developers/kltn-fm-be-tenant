@@ -5,8 +5,8 @@ import com.tenant.dto.task.TaskAdminDto;
 import com.tenant.dto.task.TaskDto;
 import com.tenant.form.task.CreateTaskForm;
 import com.tenant.form.task.UpdateTaskForm;
-import com.tenant.model.Task;
-import com.tenant.repository.TaskRepository;
+import com.tenant.storage.tenant.model.*;
+import com.tenant.storage.tenant.repository.TaskRepository;
 import org.mapstruct.*;
 
 import java.util.List;

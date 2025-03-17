@@ -4,7 +4,7 @@ import com.tenant.dto.setting.SettingAdminDto;
 import com.tenant.dto.setting.SettingDto;
 import com.tenant.form.setting.CreateSettingForm;
 import com.tenant.form.setting.UpdateSettingForm;
-import com.tenant.model.Setting;
+import com.tenant.storage.tenant.model.*;
 import org.mapstruct.*;
 
 import java.util.List;

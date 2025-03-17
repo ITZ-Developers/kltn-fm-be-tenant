@@ -287,16 +287,16 @@
 				<version>${liquibase.version}</version>
 				<configuration>
 					<changeLogFile>${liquibase.changeLogFile}</changeLogFile>
-					<diffChangeLogFile>${basedir}/src/main/resources/liquibase/${maven.build.timestamp}_changelog.xml</diffChangeLogFile>
-					<outputChangeLogFile>${basedir}/src/main/resources/liquibase/db.changelog-1.0.0.xml</outputChangeLogFile>
+					<diffChangeLogFile>${changelog.dir}/${maven.build.timestamp}_changelog.xml</diffChangeLogFile>
+					<outputChangeLogFile>${changelog.dir}/db.changelog-1.0.0.xml</outputChangeLogFile>
 					<driver>com.mysql.cj.jdbc.Driver</driver>
-					<url>jdbc:mysql://localhost:3306/db_finance</url>
+					<url>${db.url}</url>
 					<username>root</username>
 					<password>123456@a</password>
-					<referenceUrl>hibernate:spring:com.tenant.model,com.tenant.repository?dialect=org.hibernate.dialect.MySQL5InnoDBDialect&amp;hibernate.physical_naming_strategy=org.springframework.boot.orm.jpa.hibernate.SpringPhysicalNamingStrategy&amp;hibernate.implicit_naming_strategy=org.springframework.boot.orm.jpa.hibernate.SpringImplicitNamingStrategy</referenceUrl>
+					<referenceUrl>hibernate:spring:${package.model},${package.repository}?dialect=org.hibernate.dialect.MySQL5Dialect&amp;hibernate.physical_naming_strategy=org.springframework.boot.orm.jpa.hibernate.SpringPhysicalNamingStrategy&amp;hibernate.implicit_naming_strategy=org.springframework.boot.orm.jpa.hibernate.SpringImplicitNamingStrategy</referenceUrl>
 					<verbose>true</verbose>
 					<logging>debug</logging>
-					<changeSetAuthor>Authentication</changeSetAuthor>
+					<changeSetAuthor>${changelog.author}</changeSetAuthor>
 				</configuration>
 				<dependencies>
 					<dependency>
@@ -368,6 +368,36 @@
 			</plugin>
 		</plugins>
 	</build>
+
+	<profiles>
+		<profile>
+			<id>master</id>
+			<activation>
+				<activeByDefault>true</activeByDefault>
+			</activation>
+			<properties>
+				<changelog.author>Master</changelog.author>
+				<changelog.dir>${basedir}/src/main/resources/liquibase/master</changelog.dir>
+				<db.url>jdbc:mysql://localhost:3306/db_finance_master</db.url>
+				<package.model>com.tenant.storage.master.model</package.model>
+				<package.repository>com.tenant.storage.master.repository</package.repository>
+			</properties>
+		</profile>
+
+		<profile>
+			<id>tenant</id>
+			<activation>
+				<activeByDefault>false</activeByDefault>
+			</activation>
+			<properties>
+				<changelog.author>Tenant</changelog.author>
+				<changelog.dir>${basedir}/src/main/resources/liquibase/tenant</changelog.dir>
+				<db.url>jdbc:mysql://localhost:3306/db_finance</db.url>
+				<package.model>com.tenant.storage.tenant.model</package.model>
+				<package.repository>com.tenant.storage.tenant.repository</package.repository>
+			</properties>
+		</profile>
+	</profiles>
 
 	<repositories>
 		<repository>

@@ -3,7 +3,7 @@ package com.tenant.mapper;
 import com.tenant.dto.account.KeyWrapperDto;
 import com.tenant.dto.transactionPermission.TransactionPermissionAdminDto;
 import com.tenant.dto.transactionPermission.TransactionPermissionDto;
-import com.tenant.model.TransactionPermission;
+import com.tenant.storage.tenant.model.*;
 import org.mapstruct.*;
 
 import java.util.List;

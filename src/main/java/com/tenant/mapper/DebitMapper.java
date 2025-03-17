@@ -4,8 +4,7 @@ import com.tenant.dto.account.KeyWrapperDto;
 import com.tenant.dto.debit.DebitAdminDto;
 import com.tenant.dto.debit.DebitDto;
 import com.tenant.form.debit.UpdateDebitForm;
-import com.tenant.model.Debit;
-import com.tenant.model.Transaction;
+import com.tenant.storage.tenant.model.*;
 import org.mapstruct.*;
 
 import java.util.List;

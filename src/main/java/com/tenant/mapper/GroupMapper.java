@@ -4,7 +4,7 @@ import com.tenant.dto.group.GroupAdminDto;
 import com.tenant.dto.group.GroupDto;
 import com.tenant.form.group.CreateGroupForm;
 import com.tenant.form.group.UpdateGroupForm;
-import com.tenant.model.Group;
+import com.tenant.storage.tenant.model.*;
 import org.mapstruct.*;
 
 import java.util.List;

@@ -1,11 +1,12 @@
 package com.tenant.controller;
 
 import com.tenant.form.permission.CreatePermissionForm;
-import com.tenant.model.Permission;
 import com.tenant.dto.ApiMessageDto;
 import com.tenant.dto.ErrorCode;
 import com.tenant.mapper.PermissionMapper;
-import com.tenant.repository.PermissionRepository;
+import com.tenant.storage.tenant.model.*;
+import com.tenant.storage.tenant.model.criteria.*;
+import com.tenant.storage.tenant.repository.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;

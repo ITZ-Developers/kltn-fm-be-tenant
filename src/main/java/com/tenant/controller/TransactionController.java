@@ -7,9 +7,9 @@ import com.tenant.dto.ResponseListDto;
 import com.tenant.dto.transaction.*;
 import com.tenant.form.transaction.*;
 import com.tenant.mapper.TransactionMapper;
-import com.tenant.model.*;
-import com.tenant.model.criteria.TransactionCriteria;
-import com.tenant.repository.*;
+import com.tenant.storage.tenant.model.*;
+import com.tenant.storage.tenant.model.criteria.*;
+import com.tenant.storage.tenant.repository.*;
 import com.tenant.service.DocumentService;
 import com.tenant.service.KeyService;
 import com.tenant.service.TransactionService;
@@ -358,7 +358,7 @@ public class TransactionController extends ABasicController {
     }
 
     @PostMapping("/export-to-excel")
-    @PreAuthorize("hasRole('TR_E_E')")
+//    @PreAuthorize("hasRole('TR_E_E')")
     public ResponseEntity<Resource> exportToExcel(@Valid @RequestBody ExportExcelTransactionForm exportExcelTransactionForm, BindingResult bindingResult) throws IOException {
         TransactionCriteria transactionCriteria = new TransactionCriteria();
         transactionCriteria.setSortDate(FinanceConstant.SORT_TRANSACTION_DATE_ASC);
@@ -396,6 +396,9 @@ public class TransactionController extends ABasicController {
         headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + excelService.generateFileName("Transaction"));
         ByteArrayOutputStream outPut = new ByteArrayOutputStream();
         workbook.write(outPut);
+        workbook.close();
+        String base64String = Base64.getEncoder().encodeToString(outPut.toByteArray());
+        log.error("BASE64 {}", base64String);
         ByteArrayResource byteArrayResource = new ByteArrayResource(outPut.toByteArray());
         return ResponseEntity.ok()
                 .headers(headers)

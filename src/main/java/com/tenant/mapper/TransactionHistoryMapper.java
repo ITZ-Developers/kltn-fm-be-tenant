@@ -4,7 +4,7 @@ import com.tenant.dto.account.KeyWrapperDto;
 import com.tenant.dto.transactionHistory.TransactionHistoryAdminDto;
 import com.tenant.dto.transactionHistory.TransactionHistoryDto;
 import com.tenant.form.transactionHistory.UpdateTransactionHistoryForm;
-import com.tenant.model.TransactionHistory;
+import com.tenant.storage.tenant.model.*;
 import org.mapstruct.*;
 
 import java.util.List;

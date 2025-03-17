@@ -3,7 +3,7 @@ package com.tenant.mapper;
 import com.tenant.constant.FinanceConstant;
 import com.tenant.dto.account.KeyWrapperDto;
 import com.tenant.dto.account.SubKeyWrapperDto;
-import com.tenant.repository.TaskRepository;
+import com.tenant.storage.tenant.repository.TaskRepository;
 import com.tenant.utils.AESUtils;
 import org.mapstruct.*;
 

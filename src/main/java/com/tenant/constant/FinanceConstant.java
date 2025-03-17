@@ -61,6 +61,12 @@ public class FinanceConstant {
     public static final String KEY_INFORMATION_SECRET_KEY = "key_information_secret_key";
     public static final String DECRYPT_PASSWORD_SECRET_KEY = "decrypt_password_secret_key";
 
+    public static final String DEFAULT_TENANT_ID = "tenant_id_default";
+    public static final String TENANT_MODEL_PACKAGE = "com.tenant.storage.tenant.model";
+    public static final String TENANT_REPOSITORY_PACKAGE = "com.tenant.storage.tenant.repository";
+    public static final String MASTER_MODEL_PACKAGE = "com.tenant.storage.master.model";
+    public static final String MASTER_REPOSITORY_PACKAGE = "com.tenant.storage.master.repository";
+
     public static final Integer SERVICE_KIND_INCOME = 1;
     public static final Integer SERVICE_KIND_EXPENDITURE = 2;
 

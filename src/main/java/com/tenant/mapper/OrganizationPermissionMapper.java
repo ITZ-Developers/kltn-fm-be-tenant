@@ -3,7 +3,7 @@ package com.tenant.mapper;
 import com.tenant.dto.account.KeyWrapperDto;
 import com.tenant.dto.organizationPermission.OrganizationPermissionAdminDto;
 import com.tenant.dto.organizationPermission.OrganizationPermissionDto;
-import com.tenant.model.OrganizationPermission;
+import com.tenant.storage.tenant.model.*;
 import org.mapstruct.*;
 
 import java.util.List;

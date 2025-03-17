@@ -1,8 +1,7 @@
 package com.tenant.scheduler;
 
-import com.tenant.model.Setting;
-import com.tenant.repository.NotificationRepository;
-import com.tenant.repository.SettingRepository;
+import com.tenant.storage.tenant.model.*;
+import com.tenant.storage.tenant.repository.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;

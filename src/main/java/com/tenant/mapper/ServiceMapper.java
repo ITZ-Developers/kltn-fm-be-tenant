@@ -5,7 +5,7 @@ import com.tenant.dto.service.ServiceAdminDto;
 import com.tenant.dto.service.ServiceDto;
 import com.tenant.form.service.CreateServiceForm;
 import com.tenant.form.service.UpdateServiceForm;
-import com.tenant.model.Service;
+import com.tenant.storage.tenant.model.*;
 import org.mapstruct.*;
 
 import java.util.List;

@@ -1,15 +1,8 @@
 package com.tenant.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.tenant.dto.ApiMessageDto;
-import com.tenant.exception.GlobalExceptionHandler;
-import com.tenant.multitenancy.dto.DbConfigDto;
-import com.tenant.multitenancy.feign.FeignDbConfigAuthService;
-import com.tenant.multitenancy.tenant.TenantDBContext;
 import com.google.common.io.ByteStreams;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.web.savedrequest.Enumerator;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -28,11 +21,6 @@ import java.util.stream.Collectors;
 @Component
 @Slf4j
 public class JsonToUrlEncodedAuthenticationFilter extends OncePerRequestFilter {
-    @Autowired
-    private FeignDbConfigAuthService dbConfigAuthService;
-    @Autowired
-    private GlobalExceptionHandler globalExceptionHandler;
-
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         log.info("Token request content type: "+request.getContentType());
@@ -46,18 +34,6 @@ public class JsonToUrlEncodedAuthenticationFilter extends OncePerRequestFilter {
                                     e ->  new String[]{e.getValue()})
                             );
             HttpServletRequest requestWrapper = new RequestWrapper(request, parameters);
-            // Set the current tenant based on tenantId from the request before login
-            String tenantId = requestWrapper.getParameter("tenant_id");
-            if (StringUtils.isBlank(tenantId)) {
-                globalExceptionHandler.exceptionResponse(response, "ERROR-INVALID-TENANT", "tenant_id cannot be null");
-                return;
-            }
-            ApiMessageDto<DbConfigDto> tenant = dbConfigAuthService.getByTenantId(tenantId);
-            if (tenant == null || !tenant.getResult() || tenant.getData() == null) {
-                globalExceptionHandler.exceptionResponse(response, "ERROR-INVALID-TENANT", "No such tenant: " + tenantId);
-                return;
-            }
-            TenantDBContext.setCurrentTenant(tenant.getData().getName());
             filterChain.doFilter(requestWrapper, response);
         } else {
             filterChain.doFilter(request, response);
