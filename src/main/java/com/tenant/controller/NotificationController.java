@@ -73,7 +73,6 @@ public class NotificationController extends ABasicController {
     }
 
     @DeleteMapping(value = "/delete/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    @PreAuthorize("hasRole('NO_D')")
     public ApiMessageDto<String> delete(@PathVariable("id") Long id) {
         Notification notification = notificationRepository.findById(id).orElse(null);
         if (notification == null) {

@@ -358,7 +358,7 @@ public class TransactionController extends ABasicController {
     }
 
     @PostMapping("/export-to-excel")
-//    @PreAuthorize("hasRole('TR_E_E')")
+    @PreAuthorize("hasRole('TR_E_E')")
     public ResponseEntity<Resource> exportToExcel(@Valid @RequestBody ExportExcelTransactionForm exportExcelTransactionForm, BindingResult bindingResult) throws IOException {
         TransactionCriteria transactionCriteria = new TransactionCriteria();
         transactionCriteria.setSortDate(FinanceConstant.SORT_TRANSACTION_DATE_ASC);
