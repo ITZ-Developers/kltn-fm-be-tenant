@@ -9,7 +9,9 @@ import com.tenant.dto.account.MyKeyDto;
 import com.tenant.exception.BadRequestException;
 import com.tenant.form.account.*;
 import com.tenant.mapper.AccountMapper;
+import com.tenant.multitenancy.feign.FeignDbConfigAuthService;
 import com.tenant.multitenancy.tenant.TenantDBContext;
+import com.tenant.service.mail.MailServiceImpl;
 import com.tenant.storage.tenant.model.*;
 import com.tenant.storage.tenant.model.criteria.*;
 import com.tenant.storage.tenant.repository.*;
@@ -36,6 +38,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
@@ -46,6 +49,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/v1/account")
@@ -80,6 +84,14 @@ public class AccountController extends ABasicController {
     private CacheClientService cacheClientService;
     @Autowired
     private SessionService sessionService;
+    @Autowired
+    private MailServiceImpl mailService;
+    @Autowired
+    private GroupPermissionRepository groupPermissionRepository;
+    @Autowired
+    private FeignDbConfigAuthService feignDbConfigAuthService;
+    @Value("${master.api-key}")
+    private String masterApiKey;
 
     @GetMapping(value = "/get/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     @PreAuthorize("hasRole('EMP_V')")
@@ -269,7 +281,7 @@ public class AccountController extends ABasicController {
         account.setResetPwdCode(otp);
         account.setResetPwdTime(new Date());
         accountRepository.save(account);
-        financeApiService.sendEmail(account.getEmail(), "OTP: " + otp, "Request forget password successful, please check email", false);
+        mailService.sendVerificationMail(account.getEmail(), otp, account.getFullName());
         AccountForgetPasswordDto accountForgetPasswordDto = new AccountForgetPasswordDto();
         String zipUserId = ZipUtils.zipString(account.getId() + ";" + otp);
         accountForgetPasswordDto.setUserId(zipUserId);
@@ -387,5 +399,22 @@ public class AccountController extends ABasicController {
     public ApiMessageDto<String> clearMasterKey() {
         keyService.clearConcurrentMap();
         return makeSuccessResponse(null, "Clear key success");
+    }
+
+    @PostMapping(value = "/login", produces = MediaType.APPLICATION_JSON_VALUE)
+    public OAuth2AccessToken login(@Valid @RequestBody LoginEmployeeForm loginEmployeeForm, BindingResult bindingResult) {
+        Account employee = accountRepository.findFirstByUsername(loginEmployeeForm.getUsername()).orElse(null);
+        if (employee == null || !passwordEncoder.matches(loginEmployeeForm.getPassword(), employee.getPassword())) {
+            throw new BadRequestException(ErrorCode.ACCOUNT_ERROR_LOGIN_FAILED, "Invalid username or password");
+        }
+        if (!FinanceConstant.STATUS_ACTIVE.equals(employee.getStatus())) {
+            throw new BadRequestException(ErrorCode.ACCOUNT_ERROR_NOT_ACTIVE, "Employee is not active");
+        }
+        loginEmployeeForm.setTenantId(TenantDBContext.getCurrentTenant());
+        loginEmployeeForm.setUserId(employee.getId());
+        List<GroupPermission> permissions = groupPermissionRepository.findAllByGroupId(employee.getGroup().getId());
+        List<Long> permissionIds = permissions.stream().map(GroupPermission::getPermissionId).collect(Collectors.toList());
+        loginEmployeeForm.setPermissionIds(permissionIds);
+        return feignDbConfigAuthService.loginEmployee(masterApiKey, loginEmployeeForm);
     }
 }

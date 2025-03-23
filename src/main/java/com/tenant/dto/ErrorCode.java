@@ -26,6 +26,7 @@ public class ErrorCode {
     public static final String ACCOUNT_ERROR_PHONE_EXISTED = "ERROR-ACCOUNT-0011";
     public static final String ACCOUNT_ERROR_NOT_ALLOW_DELETE_YOURSELF = "ERROR-ACCOUNT-0012";
     public static final String ACCOUNT_ERROR_NOT_ALLOW_REQUEST_KEY = "ERROR-ACCOUNT-0013";
+    public static final String ACCOUNT_ERROR_NOT_ACTIVE = "ERROR-ACCOUNT-0014";
 
     /**
      * Starting error code Group

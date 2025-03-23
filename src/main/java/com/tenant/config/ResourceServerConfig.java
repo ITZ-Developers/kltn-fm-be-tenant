@@ -43,7 +43,7 @@ public class ResourceServerConfig extends ResourceServerConfigurerAdapter {
                 .antMatchers("/v1/setting/find-by-key", "/v1/setting/find-by-group", "/v1/setting/public").permitAll()
                 .antMatchers("/v1/key-information/decrypt").permitAll()
                 .antMatchers("/v1/transaction/export-to-excel").permitAll()
-                .antMatchers("/v1/account/input-key", "/v1/account/clear-key").permitAll()
+                .antMatchers("/v1/account/input-key", "/v1/account/clear-key", "/v1/account/login").permitAll()
                 .antMatchers("/**").authenticated()
                 .and().sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and().exceptionHandling().accessDeniedHandler(new OAuth2AccessDeniedHandler());
