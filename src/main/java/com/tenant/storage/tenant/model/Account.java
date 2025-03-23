@@ -20,7 +20,6 @@ public class Account extends Auditable<String> {
     @GenericGenerator(name = "idGenerator", strategy = "com.tenant.service.id.IdGenerator")
     @GeneratedValue(generator = "idGenerator")
     private Long id;
-    private Integer kind;
     private String username;
     @JsonIgnore
     private String password;
@@ -43,6 +42,4 @@ public class Account extends Auditable<String> {
     @ManyToOne
     @JoinColumn(name = "department_id")
     private Department department;
-    private String publicKey;
-    private String secretKey;
 }

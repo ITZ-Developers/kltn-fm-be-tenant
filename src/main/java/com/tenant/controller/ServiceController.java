@@ -68,7 +68,7 @@ public class ServiceController extends ABasicController{
         if (serviceCriteria.getIsPaged().equals(FinanceConstant.IS_PAGED_FALSE)){
             pageable = PageRequest.of(0, Integer.MAX_VALUE);
         }
-        if (!isSuperAdmin()) {
+        if (!isCustomer()) {
             serviceCriteria.setPermissionAccountId(getCurrentUser());
         }
         Page<Service> services = serviceRepository.findAll(serviceCriteria.getCriteria(), pageable);
@@ -84,7 +84,7 @@ public class ServiceController extends ABasicController{
     public ApiMessageDto<ResponseListDto<List<ServiceDto>>> autoComplete(ServiceCriteria serviceCriteria) {
         Pageable pageable = serviceCriteria.getIsPaged().equals(FinanceConstant.IS_PAGED_TRUE) ? PageRequest.of(0, 10) : PageRequest.of(0, Integer.MAX_VALUE);
         serviceCriteria.setStatus(FinanceConstant.STATUS_ACTIVE);
-        if (!isSuperAdmin()) {
+        if (!isCustomer()) {
             serviceCriteria.setPermissionAccountId(getCurrentUser());
         }
         Page<Service> services = serviceRepository.findAll(serviceCriteria.getCriteria(), pageable);

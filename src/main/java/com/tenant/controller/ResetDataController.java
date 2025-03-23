@@ -8,12 +8,9 @@ import com.tenant.form.paymentPeriod.CreatePaymentPeriodForm;
 import com.tenant.mapper.NotificationMapper;
 import com.tenant.mapper.PaymentPeriodMapper;
 import com.tenant.storage.tenant.model.*;
-import com.tenant.storage.tenant.model.criteria.*;
 import com.tenant.storage.tenant.repository.*;
 import com.tenant.service.KeyService;
 import com.tenant.service.TransactionService;
-import com.tenant.utils.AESUtils;
-import com.tenant.utils.GenerateUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.query.Param;
@@ -23,7 +20,6 @@ import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
 import javax.validation.Valid;
-import java.util.List;
 
 @RestController
 @RequestMapping("/v1/reset-data")
@@ -61,8 +57,6 @@ public class ResetDataController extends ABasicController{
     @Autowired
     private DepartmentRepository departmentRepository;
     @Autowired
-    private PermissionRepository permissionRepository;
-    @Autowired
     private KeyService keyService;
     @Autowired
     private NotificationMapper notificationMapper;
@@ -74,7 +68,7 @@ public class ResetDataController extends ABasicController{
     @ApiIgnore
     @GetMapping(value = "/database", produces = MediaType.APPLICATION_JSON_VALUE)
     public ApiMessageDto<String> resetDatabase() {
-        if(!isSuperAdmin()){
+        if(!isCustomer()){
             return makeErrorResponse(null, "Not allowed reset database");
         }
         notificationRepository.deleteAll();
@@ -98,7 +92,7 @@ public class ResetDataController extends ABasicController{
     @ApiIgnore
     @GetMapping(value = "/super-admin", produces = MediaType.APPLICATION_JSON_VALUE)
     public ApiMessageDto<String> resetSuperAdmin(@Param("id") Long id, @Param("isSuperAdmin") Boolean isSuperAdmin) {
-        if(!isSuperAdmin()){
+        if(!isCustomer()){
             return makeErrorResponse(null, "Not allowed reset super admin");
         }
         accountRepository.updateAccountByIdAndIsSuperAdmin(id, isSuperAdmin);
@@ -106,59 +100,9 @@ public class ResetDataController extends ABasicController{
     }
 
     @ApiIgnore
-    @GetMapping(value = "/generate-key", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ApiMessageDto<String> generateKeyAll() {
-        if(!isSuperAdmin()){
-            return makeErrorResponse(null, "Not allowed generate key");
-        }
-        List<Account> accounts = accountRepository.findAll();
-        for (Account account : accounts){
-            account.setSecretKey(getUniqueSecretKey());
-            accountRepository.save(account);
-        }
-        return makeSuccessResponse(null, "Generate key all success");
-    }
-
-    @ApiIgnore
-    @GetMapping(value = "/generate-key/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ApiMessageDto<String> generateKey(@PathVariable("id") Long id) {
-        if(!isSuperAdmin()){
-            return makeErrorResponse(null, "Not allowed generate key");
-        }
-        Account account = accountRepository.findById(id).orElse(null);
-        if (account == null) {
-            return makeErrorResponse(ErrorCode.ACCOUNT_ERROR_NOT_FOUND, "Not found account");
-        }
-        account.setSecretKey(getUniqueSecretKey());
-        accountRepository.save(account);
-        return makeSuccessResponse(null, "Generate key success");
-    }
-
-    private String getUniqueSecretKey(){
-        String encryptSecretKey;
-        Account existAccount;
-        String secretKey = keyService.getKeyInformationSecretKey();
-        do {
-            encryptSecretKey = AESUtils.encrypt(secretKey, GenerateUtils.generateRandomString(16), FinanceConstant.AES_ZIP_ENABLE) ;
-            existAccount = accountRepository.findFirstBySecretKey(encryptSecretKey).orElse(null);
-        } while (existAccount != null);
-        return encryptSecretKey;
-    }
-
-    @ApiIgnore
-    @GetMapping(value = "/permission-is-system", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ApiMessageDto<String> permissionIsSystem(@RequestParam(value = "isSystem", required = false) Boolean isSystem) {
-        if(!isSuperAdmin()){
-            return makeErrorResponse(null, "Not allowed generate key");
-        }
-        permissionRepository.updateAllByIsSystem(isSystem);
-        return makeSuccessResponse(null, "Permission is system key success");
-    }
-
-    @ApiIgnore
     @GetMapping(value = "/transaction", produces = MediaType.APPLICATION_JSON_VALUE)
     public ApiMessageDto<String> resetTransaction() {
-        if(!isSuperAdmin()){
+        if(!isCustomer()){
             return makeErrorResponse(null, "Not allowed reset transaction");
         }
         transactionHistoryRepository.deleteAll();
@@ -169,7 +113,7 @@ public class ResetDataController extends ABasicController{
     @ApiIgnore
     @GetMapping(value = "/key-information", produces = MediaType.APPLICATION_JSON_VALUE)
     public ApiMessageDto<String> resetKeyInformation() {
-        if(!isSuperAdmin()){
+        if(!isCustomer()){
             return makeErrorResponse(null, "Not allowed reset key information");
         }
         keyInformationRepository.deleteAll();

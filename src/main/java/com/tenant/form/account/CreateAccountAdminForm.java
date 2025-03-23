@@ -39,9 +39,6 @@ public class CreateAccountAdminForm {
     private Date birthDate;
     @ApiModelProperty(name = "address")
     private String address;
-    @NotNull(message = "kind cannot be null")
-    @ApiModelProperty(name = "kind", required = true)
-    private Integer kind;
     @NotNull(message = "status cannot be null")
     @ApiModelProperty(name = "status", required = true)
     @StatusConstraint

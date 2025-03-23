@@ -1,7 +1,7 @@
 package com.tenant.dto.group;
 
 import com.tenant.dto.ABasicAdminDto;
-import com.tenant.dto.permission.PermissionDto;
+import com.tenant.dto.permission.GroupPermissionDto;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -13,10 +13,7 @@ public class GroupAdminDto extends ABasicAdminDto {
     private String name;
     @ApiModelProperty(name = "description")
     private String description;
-    @ApiModelProperty(name = "kind")
-    private Integer kind;
-    @ApiModelProperty(name = "isSystemRole")
-    private Boolean isSystemRole;
-    @ApiModelProperty(name = "permissions")
-    private List<PermissionDto> permissions ;
+    @ApiModelProperty(name = "groupPermissions")
+    private List<GroupPermissionDto> groupPermissions;
+    private Object role;
 }

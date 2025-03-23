@@ -64,7 +64,7 @@ public class OrganizationController extends ABasicController {
         if (organizationCriteria.getIsPaged().equals(FinanceConstant.IS_PAGED_FALSE)){
             pageable = PageRequest.of(0, Integer.MAX_VALUE);
         }
-        if (!isSuperAdmin()) {
+        if (!isCustomer()) {
             organizationCriteria.setPermissionAccountId(getCurrentUser());
         }
         Page<Organization> organizations = organizationRepository.findAll(organizationCriteria.getCriteria(), pageable);
@@ -80,7 +80,7 @@ public class OrganizationController extends ABasicController {
     public ApiMessageDto<ResponseListDto<List<OrganizationDto>>> autoComplete(OrganizationCriteria organizationCriteria) {
         Pageable pageable = organizationCriteria.getIsPaged().equals(FinanceConstant.IS_PAGED_TRUE) ? PageRequest.of(0, 10) : PageRequest.of(0, Integer.MAX_VALUE);
         organizationCriteria.setStatus(FinanceConstant.STATUS_ACTIVE);
-        if (!isSuperAdmin()) {
+        if (!isCustomer()) {
             organizationCriteria.setPermissionAccountId(getCurrentUser());
         }
         Page<Organization> organizations = organizationRepository.findAll(organizationCriteria.getCriteria(), pageable);

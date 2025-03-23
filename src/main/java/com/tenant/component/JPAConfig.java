@@ -1,6 +1,5 @@
-package com.tenant.config;
+package com.tenant.component;
 
-import com.tenant.component.AuditorAwareImpl;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.domain.AuditorAware;

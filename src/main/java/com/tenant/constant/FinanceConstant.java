@@ -1,8 +1,16 @@
 package com.tenant.constant;
 
 public class FinanceConstant {
+    public static final String BACKEND_APP = "BACKEND_APP";
+    public static final String APP_MASTER = "MASTER";
+    public static final String APP_TENANT = "TENANT";
     public static final String DATE_FORMAT = "dd/MM/yyyy";
     public static final String DATE_TIME_FORMAT = "dd/MM/yyyy HH:mm:ss";
+
+    public static final String CMD_DELETE_NOTIFICATION = "CMD_DELETE_NOTIFICATION";
+    public static final String CMD_CREATE_PAYMENT_PERIOD = "CMD_CREATE_PAYMENT_PERIOD";
+    public static final String CMD_SCHEDULE_SERVICE = "CMD_SCHEDULE_SERVICE";
+    public static final String CMD_LOCK_DEVICE = "CMD_LOCK_DEVICE";
 
     public static final String NAME_PATTERN = "^[\\p{L} ]+$";
     public static final String USERNAME_PATTERN = "^[a-z0-9_]+$";

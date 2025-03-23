@@ -58,7 +58,7 @@ public class KeyInformationGroupController extends ABasicController {
         if (keyInformationGroupCriteria.getIsPaged().equals(FinanceConstant.IS_PAGED_FALSE)){
             pageable = PageRequest.of(0, Integer.MAX_VALUE);
         }
-        if (!isSuperAdmin()) {
+        if (!isCustomer()) {
             keyInformationGroupCriteria.setPermissionAccountId(getCurrentUser());
         }
         Page<KeyInformationGroup> groups = keyInformationGroupRepository.findAll(keyInformationGroupCriteria.getCriteria(), pageable);
@@ -74,7 +74,7 @@ public class KeyInformationGroupController extends ABasicController {
     public ApiMessageDto<ResponseListDto<List<KeyInformationGroupDto>>> autoComplete(KeyInformationGroupCriteria keyInformationGroupCriteria) {
         Pageable pageable = keyInformationGroupCriteria.getIsPaged().equals(FinanceConstant.IS_PAGED_TRUE) ? PageRequest.of(0, 10) : PageRequest.of(0, Integer.MAX_VALUE);
         keyInformationGroupCriteria.setStatus(FinanceConstant.STATUS_ACTIVE);
-        if (!isSuperAdmin()) {
+        if (!isCustomer()) {
             keyInformationGroupCriteria.setPermissionAccountId(getCurrentUser());
         }
         Page<KeyInformationGroup> groups = keyInformationGroupRepository.findAll(keyInformationGroupCriteria.getCriteria(), pageable);

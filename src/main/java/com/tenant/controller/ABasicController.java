@@ -1,42 +1,41 @@
 package com.tenant.controller;
 
+import com.tenant.constant.SecurityConstant;
 import com.tenant.dto.ApiMessageDto;
 import com.tenant.jwt.FinanceJwt;
-import com.tenant.multitenancy.feign.FeignDbConfigAuthService;
 import com.tenant.service.impl.UserServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
+import java.util.Map;
 
 public class ABasicController {
     @Autowired
     private UserServiceImpl userService;
-    @Autowired
-    private FeignDbConfigAuthService dbConfigAuthService;
 
-    public long getCurrentUser(){
+    public long getCurrentUser() {
         FinanceJwt financeJwt = userService.getAddInfoFromToken();
         return financeJwt.getAccountId();
     }
 
-    public long getTokenId(){
-        FinanceJwt financeJwt = userService.getAddInfoFromToken();
-        return financeJwt.getTokenId();
+    public String getCurrentGrantType() {
+        try {
+            Map<String, Object> attributes = userService.getAttributesFromToken();
+            return String.valueOf(attributes.get("grant_type"));
+        } catch (Exception ignored) {
+            return null;
+        }
     }
 
-    public FinanceJwt getSessionFromToken(){
-        return userService.getAddInfoFromToken();
-    }
-
-    public boolean isSuperAdmin(){
+    public boolean isCustomer() {
         FinanceJwt financeJwt = userService.getAddInfoFromToken();
-        if(financeJwt !=null){
-            return financeJwt.getIsSuperAdmin();
+        if (financeJwt != null) {
+            return SecurityConstant.USER_KIND_CUSTOMER.equals(financeJwt.getUserKind());
         }
         return false;
     }
 
-    public <T> ApiMessageDto<T> makeErrorResponse(String code, String message){
+    public <T> ApiMessageDto<T> makeErrorResponse(String code, String message) {
         ApiMessageDto<T> apiMessageDto = new ApiMessageDto<>();
         apiMessageDto.setResult(false);
         apiMessageDto.setCode(code);
@@ -44,7 +43,7 @@ public class ABasicController {
         return apiMessageDto;
     }
 
-    public <T> ApiMessageDto<T> makeSuccessResponse(T data, String message){
+    public <T> ApiMessageDto<T> makeSuccessResponse(T data, String message) {
         ApiMessageDto<T> apiMessageDto = new ApiMessageDto<>();
         apiMessageDto.setData(data);
         apiMessageDto.setMessage(message);

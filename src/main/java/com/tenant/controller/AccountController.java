@@ -1,10 +1,15 @@
 package com.tenant.controller;
 
+import com.tenant.cache.CacheClientService;
+import com.tenant.cache.CacheConstant;
+import com.tenant.cache.SessionService;
 import com.tenant.constant.FinanceConstant;
+import com.tenant.constant.SecurityConstant;
 import com.tenant.dto.account.MyKeyDto;
 import com.tenant.exception.BadRequestException;
 import com.tenant.form.account.*;
 import com.tenant.mapper.AccountMapper;
+import com.tenant.multitenancy.tenant.TenantDBContext;
 import com.tenant.storage.tenant.model.*;
 import com.tenant.storage.tenant.model.criteria.*;
 import com.tenant.storage.tenant.repository.*;
@@ -20,7 +25,6 @@ import com.tenant.dto.account.AccountForgetPasswordDto;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
@@ -38,15 +42,16 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 import java.nio.charset.StandardCharsets;
 import java.security.KeyPair;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.List;
-import java.util.concurrent.ConcurrentMap;
 
 @RestController
 @RequestMapping("/v1/account")
 @CrossOrigin(origins = "*", allowedHeaders = "*")
 @Slf4j
-public class AccountController extends ABasicController{
+public class AccountController extends ABasicController {
     @Autowired
     private AccountRepository accountRepository;
     @Autowired
@@ -65,18 +70,19 @@ public class AccountController extends ABasicController{
     private KeyService keyService;
     @Autowired
     private PasswordEncoder passwordEncoder;
-    @Autowired
-    @Qualifier("applicationConfig")
-    private ConcurrentMap<String, String> concurrentMap;
     @Value("${aes.secret-key.key-information}")
     private String keyInformationSecretKey;
     @Value("${aes.secret-key.finance}")
     private String financeSecretKey;
     @Value("${aes.secret-key.decrypt-password}")
     private String encryptPasswordSecretKey;
+    @Autowired
+    private CacheClientService cacheClientService;
+    @Autowired
+    private SessionService sessionService;
 
     @GetMapping(value = "/get/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    @PreAuthorize("hasRole('ACC_V')")
+    @PreAuthorize("hasRole('EMP_V')")
     public ApiMessageDto<AccountAdminDto> get(@PathVariable("id") Long id) {
         Account account = accountRepository.findById(id).orElse(null);
         if (account == null) {
@@ -86,14 +92,16 @@ public class AccountController extends ABasicController{
     }
 
     @GetMapping(value = "/list", produces = MediaType.APPLICATION_JSON_VALUE)
-    @PreAuthorize("hasRole('ACC_L')")
+    @PreAuthorize("hasRole('EMP_L')")
     public ApiMessageDto<ResponseListDto<List<AccountAdminDto>>> list(AccountCriteria accountCriteria, Pageable pageable) {
-        if (accountCriteria.getIsPaged().equals(FinanceConstant.IS_PAGED_FALSE)){
+        if (accountCriteria.getIsPaged().equals(FinanceConstant.IS_PAGED_FALSE)) {
             pageable = PageRequest.of(0, Integer.MAX_VALUE);
         }
         Page<Account> accounts = accountRepository.findAll(accountCriteria.getCriteria(), pageable);
         ResponseListDto<List<AccountAdminDto>> responseListObj = new ResponseListDto<>();
-        responseListObj.setContent(accountMapper.fromEntityListToAccountAdminDtoList(accounts.getContent()));
+        List<AccountAdminDto> dtos = accountMapper.fromEntityListToAccountAdminDtoList(accounts.getContent());
+        sessionService.mappingLastLoginForListAccounts(dtos);
+        responseListObj.setContent(dtos);
         responseListObj.setTotalPages(accounts.getTotalPages());
         responseListObj.setTotalElements(accounts.getTotalElements());
         return makeSuccessResponse(responseListObj, "Get list account success");
@@ -112,19 +120,18 @@ public class AccountController extends ABasicController{
     }
 
     @PostMapping(value = "/create-admin", produces = MediaType.APPLICATION_JSON_VALUE)
-    @PreAuthorize("hasRole('ACC_C_AD')")
+    @PreAuthorize("hasRole('EMP_C_AD')")
     public ApiMessageDto<String> createAdmin(@Valid @RequestBody CreateAccountAdminForm createAccountAdminForm, BindingResult bindingResult) {
-        Integer count = accountRepository.countAllAccounts();
         Account accountByUsername = accountRepository.findFirstByUsername(createAccountAdminForm.getUsername()).orElse(null);
         if (accountByUsername != null) {
             return makeErrorResponse(ErrorCode.ACCOUNT_ERROR_USERNAME_EXISTED, "Username existed");
         }
         Account accountByEmail = accountRepository.findFirstByEmail(createAccountAdminForm.getEmail()).orElse(null);
-        if (accountByEmail != null){
+        if (accountByEmail != null) {
             return makeErrorResponse(ErrorCode.ACCOUNT_ERROR_EMAIL_EXISTED, "Email existed");
         }
         Account accountByPhone = accountRepository.findFirstByPhone(createAccountAdminForm.getPhone()).orElse(null);
-        if (accountByPhone != null){
+        if (accountByPhone != null) {
             return makeErrorResponse(ErrorCode.ACCOUNT_ERROR_PHONE_EXISTED, "Phone existed");
         }
         if (createAccountAdminForm.getBirthDate() != null && createAccountAdminForm.getBirthDate().after(new Date())) {
@@ -135,45 +142,33 @@ public class AccountController extends ABasicController{
             return makeErrorResponse(ErrorCode.GROUP_ERROR_NOT_FOUND, "Not found group");
         }
         Department department = departmentRepository.findById(createAccountAdminForm.getDepartmentId()).orElse(null);
-        if (department == null){
+        if (department == null) {
             return makeErrorResponse(ErrorCode.DEPARTMENT_ERROR_NOT_FOUND, "Not found department");
         }
         Account account = accountMapper.fromCreateAccountAdminFormToEntity(createAccountAdminForm);
         account.setPassword(passwordEncoder.encode(createAccountAdminForm.getPassword()));
-        account.setKind(FinanceConstant.USER_KIND_ADMIN);
         account.setGroup(group);
         account.setDepartment(department);
         accountRepository.save(account);
         return makeSuccessResponse(null, "Create account admin success");
     }
 
-    private String getUniqueSecretKey(){
-        String encryptSecretKey;
-        Account existAccount;
-        String secretKeyInformation = keyService.getKeyInformationSecretKey();
-        do {
-            encryptSecretKey = AESUtils.encrypt(secretKeyInformation, GenerateUtils.generateRandomString(16), FinanceConstant.AES_ZIP_ENABLE) ;
-            existAccount = accountRepository.findFirstBySecretKey(encryptSecretKey).orElse(null);
-        } while (existAccount != null);
-        return encryptSecretKey;
-    }
-
     @PutMapping(value = "/update-admin", produces = MediaType.APPLICATION_JSON_VALUE)
-    @PreAuthorize("hasRole('ACC_U_AD')")
+    @PreAuthorize("hasRole('EMP_U_AD')")
     public ApiMessageDto<String> updateAdmin(@Valid @RequestBody UpdateAccountAdminForm updateAccountAdminForm, BindingResult bindingResult) {
         Account account = accountRepository.findById(updateAccountAdminForm.getId()).orElse(null);
         if (account == null) {
             return makeErrorResponse(ErrorCode.ACCOUNT_ERROR_NOT_FOUND, "Not found account");
         }
-        if (updateAccountAdminForm.getEmail() != null && !updateAccountAdminForm.getEmail().equals(account.getEmail())){
+        if (updateAccountAdminForm.getEmail() != null && !updateAccountAdminForm.getEmail().equals(account.getEmail())) {
             Account accountByEmail = accountRepository.findFirstByEmail(updateAccountAdminForm.getEmail()).orElse(null);
-            if (accountByEmail != null){
+            if (accountByEmail != null) {
                 return makeErrorResponse(ErrorCode.ACCOUNT_ERROR_EMAIL_EXISTED, "Email existed");
             }
         }
-        if (updateAccountAdminForm.getPhone() != null && !updateAccountAdminForm.getPhone().equals(account.getPhone())){
+        if (updateAccountAdminForm.getPhone() != null && !updateAccountAdminForm.getPhone().equals(account.getPhone())) {
             Account accountByPhone = accountRepository.findFirstByPhone(updateAccountAdminForm.getPhone()).orElse(null);
-            if (accountByPhone != null){
+            if (accountByPhone != null) {
                 return makeErrorResponse(ErrorCode.ACCOUNT_ERROR_PHONE_EXISTED, "Phone existed");
             }
         }
@@ -182,11 +177,11 @@ public class AccountController extends ABasicController{
             return makeErrorResponse(ErrorCode.GROUP_ERROR_NOT_FOUND, "Not found group");
         }
         Department department = departmentRepository.findById(updateAccountAdminForm.getDepartmentId()).orElse(null);
-        if (department == null){
+        if (department == null) {
             return makeErrorResponse(ErrorCode.DEPARTMENT_ERROR_NOT_FOUND, "Not found department");
         }
         if (StringUtils.isNoneBlank(updateAccountAdminForm.getAvatarPath())) {
-            if(!updateAccountAdminForm.getAvatarPath().equals(account.getAvatarPath())){
+            if (!updateAccountAdminForm.getAvatarPath().equals(account.getAvatarPath())) {
                 financeApiService.deleteFile(account.getAvatarPath());
             }
             account.setAvatarPath(updateAccountAdminForm.getAvatarPath());
@@ -194,19 +189,20 @@ public class AccountController extends ABasicController{
         if (updateAccountAdminForm.getBirthDate() != null && updateAccountAdminForm.getBirthDate().after(new Date())) {
             return makeErrorResponse(ErrorCode.ACCOUNT_ERROR_BIRTHDATE_INVALID, "Birthdate is invalid");
         }
+        boolean isLock = FinanceConstant.STATUS_ACTIVE.equals(account.getStatus()) && !FinanceConstant.STATUS_ACTIVE.equals(updateAccountAdminForm.getStatus());
         accountMapper.fromUpdateAccountAdminFormToEntity(updateAccountAdminForm, account);
         account.setGroup(group);
         account.setDepartment(department);
-        if (account.getStatus() != FinanceConstant.STATUS_ACTIVE) {
-            account.setSecretKey(null);
-            account.setPublicKey(null);
-        }
         accountRepository.save(account);
+        if (isLock) {
+            sessionService.sendMessageLockAccount(CacheConstant.KEY_EMPLOYEE, account.getUsername());
+            sessionService.sendMessageLockAccount(CacheConstant.KEY_MOBILE, account.getUsername());
+        }
         return makeSuccessResponse(null, "Update account admin success");
     }
 
     @DeleteMapping(value = "/delete/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    @PreAuthorize("hasRole('ACC_D')")
+    @PreAuthorize("hasRole('EMP_D')")
     public ApiMessageDto<String> delete(@PathVariable("id") Long id) {
         Account account = accountRepository.findById(id).orElse(null);
         if (account == null) {
@@ -215,13 +211,17 @@ public class AccountController extends ABasicController{
         if (account.getIsSuperAdmin()) {
             return makeErrorResponse(ErrorCode.ACCOUNT_ERROR_NOT_ALLOW_DELETE_SUPPER_ADMIN, "Not allow to delete super admin");
         }
-        if (Long.valueOf(getCurrentUser()).equals(account.getId())){
+        if (Long.valueOf(getCurrentUser()).equals(account.getId())) {
             return makeErrorResponse(ErrorCode.ACCOUNT_ERROR_NOT_ALLOW_DELETE_YOURSELF, "Not allow to delete yourself");
         }
         financeApiService.deleteFile(account.getAvatarPath());
         transactionHistoryRepository.updateAllByAccountId(id);
         keyInformationRepository.updateAllByAccountId(id);
         accountRepository.deleteById(id);
+        if (FinanceConstant.STATUS_ACTIVE.equals(account.getStatus())) {
+            sessionService.sendMessageLockAccount(CacheConstant.KEY_EMPLOYEE, account.getUsername());
+            sessionService.sendMessageLockAccount(CacheConstant.KEY_MOBILE, account.getUsername());
+        }
         return makeSuccessResponse(null, "Delete account success");
     }
 
@@ -240,11 +240,11 @@ public class AccountController extends ABasicController{
         if (account == null) {
             return makeErrorResponse(ErrorCode.ACCOUNT_ERROR_NOT_FOUND, "Not found account");
         }
-        if(!passwordEncoder.matches(updateProfileAdminForm.getOldPassword(), account.getPassword())){
+        if (!passwordEncoder.matches(updateProfileAdminForm.getOldPassword(), account.getPassword())) {
             return makeErrorResponse(ErrorCode.ACCOUNT_ERROR_WRONG_PASSWORD, "Old password is incorrect");
         }
         if (StringUtils.isNoneBlank(updateProfileAdminForm.getAvatarPath())) {
-            if(!updateProfileAdminForm.getAvatarPath().equals(account.getAvatarPath())){
+            if (!updateProfileAdminForm.getAvatarPath().equals(account.getAvatarPath())) {
                 //delete old image
                 financeApiService.deleteFile(account.getAvatarPath());
             }
@@ -259,7 +259,7 @@ public class AccountController extends ABasicController{
     }
 
     @PostMapping(value = "/request-forget-password", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ApiMessageDto<AccountForgetPasswordDto> requestForgetPassword(@Valid @RequestBody RequestForgetPasswordForm forgetForm, BindingResult bindingResult){
+    public ApiMessageDto<AccountForgetPasswordDto> requestForgetPassword(@Valid @RequestBody RequestForgetPasswordForm forgetForm, BindingResult bindingResult) {
         Account account = accountRepository.findFirstByEmail(forgetForm.getEmail()).orElse(null);
         if (account == null) {
             return makeErrorResponse(ErrorCode.ACCOUNT_ERROR_NOT_FOUND, "Not found account");
@@ -269,26 +269,26 @@ public class AccountController extends ABasicController{
         account.setResetPwdCode(otp);
         account.setResetPwdTime(new Date());
         accountRepository.save(account);
-        financeApiService.sendEmail(account.getEmail(),"OTP: " + otp, "Request forget password successful, please check email",false);
+        financeApiService.sendEmail(account.getEmail(), "OTP: " + otp, "Request forget password successful, please check email", false);
         AccountForgetPasswordDto accountForgetPasswordDto = new AccountForgetPasswordDto();
-        String zipUserId = ZipUtils.zipString(account.getId()+ ";" + otp);
+        String zipUserId = ZipUtils.zipString(account.getId() + ";" + otp);
         accountForgetPasswordDto.setUserId(zipUserId);
         return makeSuccessResponse(accountForgetPasswordDto, "Request forget password successful, please check email");
     }
 
     @PostMapping(value = "/reset-password", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ApiMessageDto<String> forgetPassword(@Valid @RequestBody ResetPasswordForm resetPasswordForm, BindingResult bindingResult){
+    public ApiMessageDto<String> forgetPassword(@Valid @RequestBody ResetPasswordForm resetPasswordForm, BindingResult bindingResult) {
         String[] unzip = ZipUtils.unzipString(resetPasswordForm.getUserId()).split(";", 2);
         Long id = ConvertUtils.convertStringToLong(unzip[0]);
         Account account = accountRepository.findById(id).orElse(null);
-        if (account == null ) {
+        if (account == null) {
             return makeErrorResponse(ErrorCode.ACCOUNT_ERROR_NOT_FOUND, "Not found account");
         }
-        if(account.getAttemptCode() >= FinanceConstant.MAX_ATTEMPT_FORGET_PWD){
+        if (account.getAttemptCode() >= FinanceConstant.MAX_ATTEMPT_FORGET_PWD) {
             return makeErrorResponse(ErrorCode.ACCOUNT_ERROR_EXCEEDED_NUMBER_OF_INPUT_ATTEMPT_OTP, "Exceeded number of input attempt OTP");
         }
-        if(!account.getResetPwdCode().equals(resetPasswordForm.getOtp()) ||
-                (new Date().getTime() - account.getResetPwdTime().getTime() >= FinanceConstant.MAX_TIME_FORGET_PWD)){
+        if (!account.getResetPwdCode().equals(resetPasswordForm.getOtp()) ||
+                (new Date().getTime() - account.getResetPwdTime().getTime() >= FinanceConstant.MAX_TIME_FORGET_PWD)) {
             account.setAttemptCode(account.getAttemptCode() + 1);
             accountRepository.save(account);
             return makeErrorResponse(ErrorCode.ACCOUNT_ERROR_OTP_INVALID, "OTP code invalid or has expired");
@@ -313,12 +313,12 @@ public class AccountController extends ABasicController{
     }
 
     @PostMapping("/request-key")
-    public ResponseEntity<Resource> requestKey(@Valid @RequestBody RequestKeyForm requestKeyForm, BindingResult bindingResult){
+    public ResponseEntity<Resource> requestKey(@Valid @RequestBody RequestKeyForm requestKeyForm, BindingResult bindingResult) {
         Account account = accountRepository.findById(getCurrentUser()).orElse(null);
         if (account == null) {
             throw new BadRequestException(ErrorCode.ACCOUNT_ERROR_NOT_FOUND, "Not found account");
         }
-        if (!passwordEncoder.matches(requestKeyForm.getPassword(), account.getPassword())){
+        if (!passwordEncoder.matches(requestKeyForm.getPassword(), account.getPassword())) {
             throw new BadRequestException(ErrorCode.ACCOUNT_ERROR_NOT_ALLOW_REQUEST_KEY, "Wrong password");
         }
         if (account.getStatus() == FinanceConstant.STATUS_PENDING) {
@@ -334,14 +334,21 @@ public class AccountController extends ABasicController{
         contentBuilder.append("-----BEGIN PRIVATE KEY-----").append("\n");
         contentBuilder.append(privateKey).append("\n");
         contentBuilder.append("-----END PRIVATE KEY-----").append("\n");
-        account.setPublicKey(publicKey);
-        account.setSecretKey(getUniqueSecretKey());
-        accountRepository.save(account);
+        String key;
+        String tenantName = TenantDBContext.getCurrentTenant();
+        if (SecurityConstant.GRANT_TYPE_EMPLOYEE.equals(getCurrentGrantType())) {
+            key = cacheClientService.getKeyString(CacheConstant.KEY_EMPLOYEE, account.getUsername(), tenantName);
+        } else {
+            key = cacheClientService.getKeyString(CacheConstant.KEY_MOBILE, account.getUsername(), tenantName);
+        }
+        cacheClientService.putPublicKey(key, publicKey);
         byte[] contentBytes = contentBuilder.toString().getBytes(StandardCharsets.UTF_8);
         ByteArrayResource byteArrayResource = new ByteArrayResource(contentBytes);
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.TEXT_PLAIN);
-        headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + "key_information.txt");
+        String timeStamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("ddMMyyyyHHmmss"));
+        String filename = "key_information_" + timeStamp + ".txt";
+        headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + filename);
         return ResponseEntity.ok()
                 .headers(headers)
                 .body(byteArrayResource);
@@ -353,7 +360,7 @@ public class AccountController extends ABasicController{
         if (account == null) {
             return makeErrorResponse(ErrorCode.ACCOUNT_ERROR_NOT_FOUND, "Not found account");
         }
-        if(!passwordEncoder.matches(changeProfilePasswordAccountForm.getOldPassword(), account.getPassword())){
+        if (!passwordEncoder.matches(changeProfilePasswordAccountForm.getOldPassword(), account.getPassword())) {
             return makeErrorResponse(ErrorCode.ACCOUNT_ERROR_WRONG_PASSWORD, "Old password is incorrect");
         }
         if (changeProfilePasswordAccountForm.getNewPassword().equals(changeProfilePasswordAccountForm.getOldPassword())) {
@@ -372,13 +379,13 @@ public class AccountController extends ABasicController{
         if (decryptFinanceSecretKey == null || decryptKeyInformationSecretKey == null || decryptPasswordSecretKey == null) {
             return makeErrorResponse(ErrorCode.ACCOUNT_ERROR_PRIVATE_KEY_INVALID, "Private key invalid");
         }
-        concurrentMap.put(FinanceConstant.PRIVATE_KEY, inputKeyForm.getPrivateKey());
+        keyService.setMasterKey(inputKeyForm.getPrivateKey());
         return makeSuccessResponse(null, "Input key success");
     }
 
     @GetMapping(value = "/clear-key", produces = MediaType.APPLICATION_JSON_VALUE)
     public ApiMessageDto<String> clearMasterKey() {
-        concurrentMap.clear();
+        keyService.clearConcurrentMap();
         return makeSuccessResponse(null, "Clear key success");
     }
 }

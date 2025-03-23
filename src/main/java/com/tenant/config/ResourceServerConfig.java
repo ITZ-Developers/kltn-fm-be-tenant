@@ -19,7 +19,6 @@ import org.springframework.security.oauth2.provider.error.OAuth2AccessDeniedHand
 public class ResourceServerConfig extends ResourceServerConfigurerAdapter {
     @Autowired
     private JwtAccessTokenConverter jwtAccessTokenConverter;
-
     @Autowired
     JsonToUrlEncodedAuthenticationFilter jsonFilter;
 

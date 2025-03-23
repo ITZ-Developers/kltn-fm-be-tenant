@@ -9,6 +9,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -16,7 +17,6 @@ public interface AccountRepository extends JpaRepository<Account, Long>, JpaSpec
     Optional<Account> findFirstByUsername(String username);
     Optional<Account> findFirstByEmail(String email);
     Optional<Account> findFirstByPhone(String phone);
-    Optional<Account> findFirstBySecretKey(String secretKey);
     @Transactional
     @Modifying
     @Query("UPDATE Account SET department.id = NULL WHERE department.id = :departmentId")
@@ -32,4 +32,5 @@ public interface AccountRepository extends JpaRepository<Account, Long>, JpaSpec
     @Query("SELECT COUNT(a) FROM Account a")
     Integer countAllAccounts();
     boolean existsByGroupId(Long groupId);
+    List<Account> findAllByGroupId(Long groupId);
 }

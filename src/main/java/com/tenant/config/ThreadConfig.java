@@ -10,10 +10,8 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 public class ThreadConfig {
     @Value("${thread.pool.size:10}")
     private Integer threadPoolSize;
-
     @Value("${thread.pool.queue.size:100}")
     private Integer threadQueuePoolSize;
-
 
     @Bean(name = "threadPoolExecutor")
     public TaskExecutor threadPoolTaskExecutor() {

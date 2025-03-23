@@ -32,7 +32,6 @@ import java.util.concurrent.ConcurrentMap;
 @EnableWebMvc
 public class WebMvcConfig implements WebMvcConfigurer {
     public static final String DATE_TIME_FORMAT = "dd/MM/yyyy HH:mm:ss";
-
     @Autowired
     LogInterceptor logInterceptor;
 
@@ -84,6 +83,6 @@ public class WebMvcConfig implements WebMvcConfigurer {
 
     @Bean("applicationConfig")
     public ConcurrentMap<String, String> getApplicationConfig(){
-        return new ConcurrentHashMap<String, String>();
+        return new ConcurrentHashMap<>();
     }
 }

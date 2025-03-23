@@ -1,6 +1,5 @@
 package com.tenant.multitenancy.config;
 
-
 import liquibase.integration.spring.SpringLiquibase;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;

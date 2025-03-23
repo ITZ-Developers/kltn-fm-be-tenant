@@ -78,7 +78,7 @@ public class TaskController extends ABasicController {
         if (taskCriteria.getIsPaged().equals(FinanceConstant.IS_PAGED_FALSE)){
             pageable = PageRequest.of(0, Integer.MAX_VALUE);
         }
-        if (!isSuperAdmin()) {
+        if (!isCustomer()) {
             taskCriteria.setPermissionAccountId(getCurrentUser());
         }
         Page<Task> tasks = taskRepository.findAll(taskCriteria.getCriteria(), pageable);
@@ -94,7 +94,7 @@ public class TaskController extends ABasicController {
     public ApiMessageDto<ResponseListDto<List<TaskDto>>> autoComplete(TaskCriteria taskCriteria) {
         Pageable pageable = taskCriteria.getIsPaged().equals(FinanceConstant.IS_PAGED_TRUE) ? PageRequest.of(0, 10) : PageRequest.of(0, Integer.MAX_VALUE);
         taskCriteria.setStatus(FinanceConstant.STATUS_ACTIVE);
-        if (!isSuperAdmin()) {
+        if (!isCustomer()) {
             taskCriteria.setPermissionAccountId(getCurrentUser());
         }
         Page<Task> tasks = taskRepository.findAll(taskCriteria.getCriteria(), pageable);

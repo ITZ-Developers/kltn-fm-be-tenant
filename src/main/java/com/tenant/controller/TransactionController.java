@@ -89,7 +89,7 @@ public class TransactionController extends ABasicController {
         if (transactionCriteria.getIsPaged().equals(FinanceConstant.IS_PAGED_FALSE)){
             pageable = PageRequest.of(0, Integer.MAX_VALUE);
         }
-        if (!isSuperAdmin()) {
+        if (!isCustomer()) {
             transactionCriteria.setPermissionAccountId(getCurrentUser());
         }
         Page<Transaction> transactions = transactionRepository.findAll(transactionCriteria.getCriteria(), pageable);
@@ -105,7 +105,7 @@ public class TransactionController extends ABasicController {
     public ApiMessageDto<ResponseListDto<List<TransactionDto>>> autoComplete(TransactionCriteria transactionCriteria) {
         Pageable pageable = transactionCriteria.getIsPaged().equals(FinanceConstant.IS_PAGED_TRUE) ? PageRequest.of(0, 10) : PageRequest.of(0, Integer.MAX_VALUE);
         transactionCriteria.setStatus(FinanceConstant.STATUS_ACTIVE);
-        if (!isSuperAdmin()) {
+        if (!isCustomer()) {
             transactionCriteria.setPermissionAccountId(getCurrentUser());
         }
         Page<Transaction> transactions = transactionRepository.findAll(transactionCriteria.getCriteria(), pageable);

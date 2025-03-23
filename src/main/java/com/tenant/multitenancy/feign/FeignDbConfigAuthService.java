@@ -13,4 +13,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 public interface FeignDbConfigAuthService {
     @GetMapping(value = "/v1/db-config/get-by-name")
     ApiMessageDto<DbConfigDto> getByName(@RequestParam(value = "name") String name, @RequestHeader(FeignConstant.HEADER_X_API_KEY) String apiKey);
+    @GetMapping(value = "/v1/group/employee")
+    ApiMessageDto<Object> getRoleEmployee(@RequestHeader(FeignConstant.HEADER_X_API_KEY) String apiKey);
 }

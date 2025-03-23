@@ -1,9 +1,12 @@
 package com.tenant.component;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.tenant.cache.CacheClientService;
+import com.tenant.cache.CacheConstant;
 import com.tenant.constant.FinanceConstant;
+import com.tenant.constant.SecurityConstant;
 import com.tenant.dto.ApiMessageDto;
-import com.tenant.exception.ErrorNotReadyException;
+import com.tenant.dto.ErrorCode;
 import com.tenant.jwt.FinanceJwt;
 import com.tenant.multitenancy.tenant.TenantDBContext;
 import com.tenant.service.HttpService;
@@ -40,8 +43,10 @@ public class LogInterceptor implements HandlerInterceptor {
     @Autowired
     @Lazy
     private ObjectMapper objectMapper;
+    @Autowired
+    private CacheClientService cacheClientService;
     private static final List<String> ALLOWED_URLS = Arrays.asList(
-            "/v1/account/**", "/v1/group/**" , "/v1/permission/**"
+            "/v1/account/**", "/v1/group/**", "/v1/permission/**"
     );
     private static final List<String> NOT_ALLOWED_URLS = Arrays.asList(
             "/v1/account/request-key", "/v1/account/my-key"
@@ -51,27 +56,33 @@ public class LogInterceptor implements HandlerInterceptor {
             "/v1/account/input-key",
             "/v1/account/clear-key"
     );
+    static final List<String> WHITE_LIST = List.of(
+    );
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws IOException {
         if (DispatcherType.REQUEST.name().equals(request.getDispatcherType().name())
                 && request.getMethod().equals(HttpMethod.GET.name())) {
         }
+        if (StringUtils.isBlank(concurrentMap.get(FinanceConstant.PRIVATE_KEY))) {
+            return handleUnauthorized(response, ErrorCode.GENERAL_ERROR_SYSTEM_NOT_READY, "Not ready");
+        }
+        if (!isAllowed(request, WHITE_LIST) && !isValidSession()) {
+            return handleUnauthorized(response, ErrorCode.GENERAL_ERROR_INVALID_SESSION, "Invalid session");
+        }
+        if (isAllowed(request, INTERNAL_REQUEST) && !httpService.validateInternalRequest(request)) {
+            return handleUnauthorized(response, ErrorCode.GENERAL_ERROR_INVALID_API_KEY, "Invalid api key");
+        }
+        String tenantName = request.getHeader("X-tenant");
         FinanceJwt financeJwt = userService.getAddInfoFromToken();
-        if (financeJwt != null){
-            TenantDBContext.setCurrentTenant(financeJwt.getTenantId());
-            if (StringUtils.isBlank(concurrentMap.get(FinanceConstant.PRIVATE_KEY))) {
-                if (!financeJwt.getIsSuperAdmin() || !isUrlAllowed(request.getRequestURI())){
-                    throw new ErrorNotReadyException("Not ready");
-                }
-            }
+        if (financeJwt != null) {
+            TenantDBContext.setCurrentTenant(financeJwt.getTenantName());
+        } else {
+            TenantDBContext.setCurrentTenant(tenantName);
         }
         long startTime = System.currentTimeMillis();
         request.setAttribute("startTime", startTime);
         log.debug("Starting call url: [" + getUrl(request) + "]");
-        if (isAllowed(request, INTERNAL_REQUEST)) {
-            httpService.validateInternalRequest(request);
-        }
         return true;
     }
 
@@ -90,6 +101,7 @@ public class LogInterceptor implements HandlerInterceptor {
 
     /**
      * get full url request
+     *
      * @param req
      * @return
      */
@@ -114,9 +126,10 @@ public class LogInterceptor implements HandlerInterceptor {
         return whiteList.stream().anyMatch(pattern -> pathMatcher.match(pattern, request.getRequestURI()));
     }
 
-    private boolean handleUnauthorized(HttpServletResponse response, String message) throws IOException {
+    private boolean handleUnauthorized(HttpServletResponse response, String code, String message) throws IOException {
         ApiMessageDto<String> apiMessageDto = new ApiMessageDto<>();
         apiMessageDto.setMessage(message);
+        apiMessageDto.setCode(code);
         apiMessageDto.setResult(false);
         response.setStatus(HttpStatus.UNAUTHORIZED.value());
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
@@ -124,5 +137,27 @@ public class LogInterceptor implements HandlerInterceptor {
         response.getOutputStream().write(objectMapper.writeValueAsBytes(apiMessageDto));
         response.flushBuffer();
         return false;
+    }
+
+    public Boolean isValidSession() {
+        Map<String, Object> attributes = userService.getAttributesFromToken();
+        if (attributes == null || attributes.isEmpty()) {
+            return true;
+        }
+        String username = String.valueOf(attributes.get("username"));
+        String grantType = String.valueOf(attributes.get("grant_type"));
+        String sessionId = String.valueOf(attributes.get("session_id"));
+        String tenantName = String.valueOf(attributes.get("tenant_name"));
+        String key = "";
+        if (SecurityConstant.GRANT_TYPE_EMPLOYEE.equals(grantType)) {
+            key = cacheClientService.getKeyString(CacheConstant.KEY_EMPLOYEE, username, tenantName);
+        } else if (SecurityConstant.GRANT_TYPE_CUSTOMER.equals(grantType)) {
+            key = cacheClientService.getKeyString(CacheConstant.KEY_CUSTOMER, username, null);
+        } else if (SecurityConstant.GRANT_TYPE_MOBILE.equals(grantType)) {
+            key = cacheClientService.getKeyString(CacheConstant.KEY_MOBILE, username, tenantName);
+        } else {
+            return false;
+        }
+        return cacheClientService.checkSession(key, sessionId);
     }
 }

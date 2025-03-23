@@ -1,6 +1,12 @@
 package com.tenant.dto;
 
 public class ErrorCode {
+    /**
+     * Starting error code Account
+     */
+    public static final String GENERAL_ERROR_SYSTEM_NOT_READY = "ERROR-SYSTEM-NOT-READY";
+    public static final String GENERAL_ERROR_INVALID_SESSION = "ERROR-INVALID-SESSION";
+    public static final String GENERAL_ERROR_INVALID_API_KEY = "ERROR-INVALID-API-KEY";
 
     /**
      * Starting error code Account
@@ -29,7 +35,7 @@ public class ErrorCode {
     public static final String GROUP_ERROR_NOT_ALLOW_UPDATE = "ERROR-GROUP-0002";
     public static final String GROUP_ERROR_NOT_ALLOW_DELETE = "ERROR-GROUP-0003";
     public static final String GROUP_ERROR_NOT_ALLOW_DELETE_SYSTEM_ROLE = "ERROR-GROUP-0004";
-    
+
     /**
      * Starting error code Permission
      */
@@ -77,55 +83,55 @@ public class ErrorCode {
 
     /**
      * Starting error code Notification Group
-     * */
+     */
     public static final String NOTIFICATION_GROUP_ERROR_NOT_FOUND = "ERROR-NOTIFICATION-GROUP-0000";
     public static final String NOTIFICATION_GROUP_ERROR_NAME_EXISTED = "ERROR-NOTIFICATION-GROUP-0001";
 
     /**
      * Starting error code User Group Notification
-     * */
+     */
     public static final String USER_GROUP_NOTIFICATION_ERROR_NOT_FOUND = "ERROR-USER-GROUP-NOTIFICATION-0000";
     public static final String USER_GROUP_NOTIFICATION_ERROR_ACCOUNT_AND_NOTIFICATION_GROUP_EXISTED = "ERROR-USER-GROUP-NOTIFICATION-0001";
 
     /**
      * Starting error code Notification
-     * */
+     */
     public static final String NOTIFICATION_ERROR_NOT_FOUND = "ERROR-NOTIFICATION-0000";
     public static final String NOTIFICATION_ERROR_ALREADY_READ = "ERROR-NOTIFICATION-0001";
 
     /**
      * Starting error code Transaction History
-     * */
+     */
     public static final String TRANSACTION_HISTORY_ERROR_NOT_FOUND = "ERROR-TRANSACTION-HISTORY-0000";
 
     /**
      * Starting error code Key Information
-     * */
+     */
     public static final String KEY_INFORMATION_ERROR_NOT_FOUND = "ERROR-KEY-INFORMATION-0000";
     public static final String KEY_INFORMATION_ERROR_DOCUMENT_INVALID = "ERROR-KEY-INFORMATION-0002";
     public static final String KEY_INFORMATION_ERROR_TAG_INVALID = "ERROR-TAG-0003";
 
     /**
      * Starting error code Key Information Group
-     * */
+     */
     public static final String KEY_INFORMATION_GROUP_ERROR_NOT_FOUND = "ERROR-KEY-INFORMATION-GROUP-0000";
     public static final String KEY_INFORMATION_GROUP_ERROR_NAME_EXISTED = "ERROR-KEY-INFORMATION-GROUP-0001";
 
     /**
      * Starting error code Transaction Group
-     * */
+     */
     public static final String TRANSACTION_GROUP_ERROR_NOT_FOUND = "ERROR-TRANSACTION-GROUP-0000";
     public static final String TRANSACTION_GROUP_ERROR_NAME_EXISTED = "ERROR-TRANSACTION-GROUP-0001";
 
     /**
      * Starting error code Service Group
-     * */
+     */
     public static final String SERVICE_GROUP_ERROR_NOT_FOUND = "ERROR-SERVICE-GROUP-0000";
     public static final String SERVICE_GROUP_ERROR_NAME_EXISTED = "ERROR-SERVICE-GROUP-0001";
 
     /**
      * Starting error code Payment Period
-     * */
+     */
     public static final String PAYMENT_PERIOD_ERROR_NOT_FOUND = "ERROR-PAYMENT-PERIOD-0000";
     public static final String PAYMENT_PERIOD_ERROR_DATE_INVALID = "ERROR-PAYMENT-PERIOD-0001";
     public static final String PAYMENT_PERIOD_ERROR_NOT_ALLOW_UPDATE = "ERROR-PAYMENT-PERIOD-0002";
@@ -139,26 +145,26 @@ public class ErrorCode {
 
     /**
      * Starting error code Service Notification Group
-     * */
+     */
     public static final String SERVICE_NOTIFICATION_GROUP_ERROR_NOT_FOUND = "ERROR-SERVICE-NOTIFICATION-GROUP-0000";
     public static final String SERVICE_NOTIFICATION_GROUP_ERROR_SERVICE_AND_NOTIFICATION_GROUP_EXISTED = "ERROR-SERVICE-NOTIFICATION-GROUP-0001";
 
     /**
      * Starting error code Organization
-     * */
+     */
     public static final String ORGANIZATION_ERROR_NOT_FOUND = "ERROR-ORGANIZATION-0000";
     public static final String ORGANIZATION_ERROR_NAME_EXISTED = "ERROR-ORGANIZATION-0001";
 
     /**
      * Starting error code Project
-     * */
+     */
     public static final String PROJECT_ERROR_NOT_FOUND = "ERROR-PROJECT-0000";
     public static final String PROJECT_ERROR_NAME_EXISTED = "ERROR-PROJECT-0001";
     public static final String PROJECT_ERROR_TAG_INVALID = "ERROR-PROJECT-0002";
 
     /**
      * Starting error code Task
-     * */
+     */
     public static final String TASK_ERROR_NOT_FOUND = "ERROR-TASK-0000";
     public static final String TASK_ERROR_NOT_ALLOW_CHANGE_STATE = "ERROR-TASK-0001";
     public static final String TASK_ERROR_DOCUMENT_INVALID = "ERROR-TASK-0002";
@@ -166,34 +172,34 @@ public class ErrorCode {
 
     /**
      * Starting error code Transaction Permission
-     * */
+     */
     public static final String TRANSACTION_PERMISSION_ERROR_NOT_FOUND = "ERROR-TRANSACTION-PERMISSION-0000";
     public static final String TRANSACTION_PERMISSION_ERROR_ACCOUNT_AND_TRANSACTION_EXISTED = "ERROR-TRANSACTION-PERMISSION-0001";
     public static final String TRANSACTION_PERMISSION_ERROR_ACCOUNT_AND_TRANSACTION_GROUP_EXISTED = "ERROR-TRANSACTION-PERMISSION-0002";
 
     /**
      * Starting error code Key Information Permission
-     * */
+     */
     public static final String KEY_INFORMATION_PERMISSION_ERROR_NOT_FOUND = "ERROR-KEY-INFORMATION-PERMISSION-0000";
     public static final String KEY_INFORMATION_PERMISSION_ERROR_ACCOUNT_AND_KEY_INFORMATION_EXISTED = "ERROR-KEY-INFORMATION-PERMISSION-0001";
     public static final String KEY_INFORMATION_PERMISSION_ERROR_ACCOUNT_AND_KEY_INFORMATION_GROUP_EXISTED = "ERROR-KEY-INFORMATION-PERMISSION-0002";
 
     /**
      * Starting error code Task Permission
-     * */
+     */
     public static final String TASK_PERMISSION_ERROR_NOT_FOUND = "ERROR-TASK-PERMISSION-0000";
     public static final String TASK_PERMISSION_ERROR_ACCOUNT_AND_TASK_EXISTED = "ERROR-TASK-PERMISSION-0001";
     public static final String TASK_PERMISSION_ERROR_ACCOUNT_AND_PROJECT_EXISTED = "ERROR-TASK-PERMISSION-0002";
 
     /**
      * Starting error code Organization Permission
-     * */
+     */
     public static final String ORGANIZATION_PERMISSION_ERROR_NOT_FOUND = "ERROR-ORGANIZATION-PERMISSION-0000";
     public static final String ORGANIZATION_PERMISSION_ERROR_ACCOUNT_AND_ORGANIZATION_EXISTED = "ERROR-ORGANIZATION-PERMISSION-0001";
 
     /**
      * Starting error code Debit
-     * */
+     */
     public static final String DEBIT_ERROR_NOT_FOUND = "ERROR-DEBIT-0000";
     public static final String DEBIT_ERROR_NOT_ALLOW_DELETE = "ERROR-DEBIT-0001";
     public static final String DEBIT_ERROR_NOT_ALLOW_UPDATE = "ERROR-DEBIT-0002";
@@ -203,14 +209,14 @@ public class ErrorCode {
 
     /**
      * Starting error code Service Permission
-     * */
+     */
     public static final String SERVICE_PERMISSION_ERROR_NOT_FOUND = "ERROR-SERVICE-PERMISSION-0000";
     public static final String SERVICE_PERMISSION_ERROR_ACCOUNT_AND_SERVICE_EXISTED = "ERROR-SERVICE-PERMISSION-0001";
     public static final String SERVICE_PERMISSION_ERROR_ACCOUNT_AND_SERVICE_GROUP_EXISTED = "ERROR-SERVICE-PERMISSION-0002";
 
     /**
      * Starting error code Tag
-     * */
+     */
     public static final String TAG_ERROR_NOT_FOUND = "ERROR-TAG-0000";
-    public static final String TAG_ERROR_NAME_EXISTED= "ERROR-TAG-0001";
+    public static final String TAG_ERROR_NAME_EXISTED = "ERROR-TAG-0001";
 }

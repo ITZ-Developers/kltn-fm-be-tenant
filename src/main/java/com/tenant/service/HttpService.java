@@ -15,15 +15,16 @@ public class HttpService {
     @Value("${tenant.api-key}")
     private String apiSecretKey;
 
-    public void validateInternalRequest(HttpServletRequest request) {
+    public boolean validateInternalRequest(HttpServletRequest request) {
         try {
             String apiKey = request.getHeader("X-Api-Key");
             if (apiKey == null || apiKey.isEmpty() || !Objects.equals(apiKey, apiSecretKey)) {
-                throw new UnauthorizationException("Full authentication is required to access this resource");
+                return false;
             }
         } catch (Exception e) {
-            throw new UnauthorizationException("Full authentication is required to access this resource");
+            return false;
         }
+        return true;
     }
 
     public MultiValueMap<String, String> buildParams(Object criteria) {

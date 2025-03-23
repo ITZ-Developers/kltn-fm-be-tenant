@@ -14,7 +14,6 @@ import java.util.List;
         nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE,
         uses = {GroupMapper.class, DepartmentMapper.class})
 public interface AccountMapper {
-
     @Mapping(source = "username", target = "username")
     @Mapping(source = "fullName", target = "fullName")
     @Mapping(source = "avatarPath", target = "avatarPath")
@@ -22,7 +21,6 @@ public interface AccountMapper {
     @Mapping(source = "phone", target = "phone")
     @Mapping(source = "address", target = "address")
     @Mapping(source = "birthDate", target = "birthDate")
-    @Mapping(source = "kind", target = "kind")
     @Mapping(source = "status", target = "status")
     @BeanMapping(ignoreByDefault = true)
     Account fromCreateAccountAdminFormToEntity(CreateAccountAdminForm createAccountAdminForm);
@@ -38,7 +36,6 @@ public interface AccountMapper {
     void fromUpdateAccountAdminFormToEntity(UpdateAccountAdminForm updateAccountAdminForm, @MappingTarget Account account);
 
     @Mapping(source = "id", target = "id")
-    @Mapping(source = "kind", target = "kind")
     @Mapping(source = "username", target = "username")
     @Mapping(source = "phone", target = "phone")
     @Mapping(source = "email", target = "email")
@@ -50,10 +47,8 @@ public interface AccountMapper {
     @Mapping(source = "department", target = "department", qualifiedByName = "fromEntityToDepartmentDto")
     @Mapping(source = "lastLogin", target = "lastLogin")
     @Mapping(source = "isSuperAdmin", target = "isSuperAdmin")
-    @Mapping(source = "publicKey", target = "publicKey")
     @Mapping(source = "status", target = "status")
     @Mapping(source = "createdDate", target = "createdDate")
-    @Mapping(source = "modifiedDate", target = "modifiedDate")
     @BeanMapping(ignoreByDefault = true)
     @Named("fromEntityToAccountAdminDto")
     AccountAdminDto fromEntityToAccountAdminDto(Account account);
@@ -62,7 +57,6 @@ public interface AccountMapper {
     List<AccountAdminDto> fromEntityListToAccountAdminDtoList(List<Account> accounts);
 
     @Mapping(source = "id", target = "id")
-    @Mapping(source = "kind", target = "kind")
     @Mapping(source = "username", target = "username")
     @Mapping(source = "phone", target = "phone")
     @Mapping(source = "address", target = "address")
@@ -73,7 +67,6 @@ public interface AccountMapper {
     @Mapping(source = "status", target = "status")
     @Mapping(source = "group", target = "group", qualifiedByName = "fromEntityToGroupDto")
     @Mapping(source = "isSuperAdmin", target = "isSuperAdmin")
-    @Mapping(source = "publicKey", target = "publicKey")
     @Mapping(source = "department", target = "department", qualifiedByName = "fromEntityToDepartmentDto")
     @BeanMapping(ignoreByDefault = true)
     @Named("fromEntityToAccountDto")
@@ -90,7 +83,6 @@ public interface AccountMapper {
     void fromUpdateProfileAdminFormToEntity(UpdateProfileAdminForm updateProfileAdminForm, @MappingTarget Account account);
 
     @Mapping(source = "id", target = "id")
-    @Mapping(source = "kind", target = "kind")
     @Mapping(source = "username", target = "username")
     @Mapping(source = "phone", target = "phone")
     @Mapping(source = "address", target = "address")

@@ -14,13 +14,10 @@ import java.util.Arrays;
 @Service
 @Slf4j
 public class CommonAsyncService {
-
     @Autowired
     private EmailService emailService;
-
     @Autowired
     RestTemplate restTemplate;
-
     @Autowired
     @Qualifier("threadPoolExecutor")
     @Getter

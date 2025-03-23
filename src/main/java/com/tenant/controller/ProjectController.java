@@ -66,7 +66,7 @@ public class ProjectController extends ABasicController {
         if (projectCriteria.getIsPaged().equals(FinanceConstant.IS_PAGED_FALSE)){
             pageable = PageRequest.of(0, Integer.MAX_VALUE);
         }
-        if (!isSuperAdmin()) {
+        if (!isCustomer()) {
             projectCriteria.setPermissionAccountId(getCurrentUser());
         }
         Page<Project> projects = projectRepository.findAll(projectCriteria.getCriteria(), pageable);
@@ -82,7 +82,7 @@ public class ProjectController extends ABasicController {
     public ApiMessageDto<ResponseListDto<List<ProjectDto>>> autoComplete(ProjectCriteria projectCriteria) {
         Pageable pageable = projectCriteria.getIsPaged().equals(FinanceConstant.IS_PAGED_TRUE) ? PageRequest.of(0, 10) : PageRequest.of(0, Integer.MAX_VALUE);
         projectCriteria.setStatus(FinanceConstant.STATUS_ACTIVE);
-        if (!isSuperAdmin()) {
+        if (!isCustomer()) {
             projectCriteria.setPermissionAccountId(getCurrentUser());
         }
         Page<Project> projects = projectRepository.findAll(projectCriteria.getCriteria(), pageable);

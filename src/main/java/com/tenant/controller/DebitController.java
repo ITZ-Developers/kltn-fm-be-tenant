@@ -86,7 +86,7 @@ public class DebitController extends ABasicController {
         if (debitCriteria.getIsPaged().equals(FinanceConstant.IS_PAGED_FALSE)){
             pageable = PageRequest.of(0, Integer.MAX_VALUE);
         }
-        if (!isSuperAdmin()) {
+        if (!isCustomer()) {
             debitCriteria.setPermissionAccountId(getCurrentUser());
         }
         Page<Debit> debits = debitRepository.findAll(debitCriteria.getCriteria(), pageable);
@@ -102,7 +102,7 @@ public class DebitController extends ABasicController {
     public ApiMessageDto<ResponseListDto<List<DebitDto>>> autoComplete(DebitCriteria debitCriteria) {
         Pageable pageable = debitCriteria.getIsPaged().equals(FinanceConstant.IS_PAGED_TRUE) ? PageRequest.of(0, 10) : PageRequest.of(0, Integer.MAX_VALUE);
         debitCriteria.setStatus(FinanceConstant.STATUS_ACTIVE);
-        if (!isSuperAdmin()) {
+        if (!isCustomer()) {
             debitCriteria.setPermissionAccountId(getCurrentUser());
         }
         Page<Debit> debits = debitRepository.findAll(debitCriteria.getCriteria(), pageable);

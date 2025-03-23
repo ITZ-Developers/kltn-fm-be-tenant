@@ -11,102 +11,68 @@ import java.io.Serializable;
 public class FinanceJwt implements Serializable {
     public static final String DELIM = "\\|";
     public static final String EMPTY_STRING = "<>";
-    private Long tokenId;
 
     private Long accountId = -1L;
-    private Long storeId = -1L;
-    private String kind = EMPTY_STRING;//token kind
-    private String permission = EMPTY_STRING;
-    private Long deviceId = -1L;// id cua thiet bi, lưu ở table device để get firebase url..
-    private Integer userKind = -1; //loại user là admin hay là gì
-    private String username = EMPTY_STRING;// username hoac order code
-    private Integer tabletKind = -1;
-    private Long orderId = -1L;
+    private Integer userKind = -1;
+    private String username = EMPTY_STRING;
     private Boolean isSuperAdmin = false;
-    private String tenantId = EMPTY_STRING;
+    private String secretKey = EMPTY_STRING;
+    private String tenantName = EMPTY_STRING;
 
-    public String toClaim(){
-        if(deviceId == null){
-            deviceId = -1L;
+    public static FinanceJwt decode(String input) {
+        if (input == null || input.isEmpty()) {
+            log.warn("Input token is null or empty.");
+            return null;
         }
-        if(userKind == null){
-            userKind = -1;
-        }
-        if(username == null){
-            username = EMPTY_STRING;
-        }
-        if(tabletKind==null){
-            tabletKind = -1;
-        }
-        if(orderId == null){
-            orderId = -1L;
-        }
-        return ZipUtils.zipString(accountId+DELIM+ storeId +DELIM+kind+DELIM+permission+DELIM+deviceId+DELIM+userKind+DELIM+username+DELIM+tabletKind+DELIM+orderId+DELIM+isSuperAdmin+DELIM+tenantId) ;
-    }
-
-    public static FinanceJwt decode(String input){
         FinanceJwt result = null;
         try {
-            String[] items = ZipUtils.unzipString(input).split(DELIM,11);
-            if(items.length >= 10){
-                result = new FinanceJwt();
-                result.setAccountId(parserLong(items[0]));
-                result.setStoreId(parserLong(items[1]));
-                result.setKind(checkString(items[2]));
-                result.setPermission(checkString(items[3]));
-                result.setDeviceId(parserLong(items[4]));
-                result.setUserKind(parserInt(items[5]));
-                result.setUsername(checkString(items[6]));
-                result.setTabletKind(parserInt(items[7]));
-                result.setOrderId(parserLong(items[8]));
-                result.setIsSuperAdmin(checkBoolean(items[9]));
-                if(items.length > 10){
-                    result.setTenantId(checkString(items[10]));
-                }
+            String decoded = ZipUtils.unzipString(input);
+            if (decoded == null) {
+                log.warn("Decoded token is null.");
+                return null;
             }
-        }catch (Exception e){
-            log.error(e.getMessage(),e);
-        }
-        return  result;
-    }
-
-    private static Long parserLong(String input){
-        try{
-            Long out = Long.parseLong(input);
-            if(out > 0){
-                return  out;
+            String[] items = decoded.split(DELIM, -1);
+            if (items.length < 5) {
+                log.warn("Token format is invalid. Expected at least 4 parts but got {}", items.length);
+                return null;
             }
-        }catch (Exception e){
-            log.error(e.getMessage(),e);
+            result = new FinanceJwt();
+            result.setAccountId(parserLong(items[0], -1L));
+            result.setUserKind(parserInt(items[1], -1));
+            result.setUsername(checkString(items[2]));
+            result.setIsSuperAdmin(checkBoolean(items[3]));
+            result.setSecretKey(checkString(items[4]));
+            result.setTenantName(checkString(items[5]));
+
+        } catch (Exception e) {
+            log.error("Error decoding token: {}", e.getMessage(), e);
         }
-        return null;
+        return result;
     }
 
-    private static Integer parserInt(String input){
-        try{
-            Integer out = Integer.parseInt(input);
-            if(out > 0){
-                return  out;
-            }
-        }catch (Exception e){
-            log.error(e.getMessage(),e);
+    private static Long parserLong(String input, Long defaultValue) {
+        try {
+            return Long.parseLong(input);
+        } catch (NumberFormatException e) {
+            log.warn("Invalid Long format: {}", input);
         }
-        return null;
+        return defaultValue;
     }
 
-    private static String checkString(String input){
-        if(!input.equals(EMPTY_STRING)){
-            return  input;
+    private static Integer parserInt(String input, Integer defaultValue) {
+        try {
+            return Integer.parseInt(input);
+        } catch (NumberFormatException e) {
+            log.warn("Invalid Integer format: {}", input);
         }
-        return  null;
+        return defaultValue;
     }
 
-    private static Boolean checkBoolean(String input){
-        try{
-            return Boolean.parseBoolean(input);
-        }catch (Exception e){
-            log.error(e.getMessage(),e);
-            return false;
-        }
+    private static String checkString(String input) {
+        return (input != null && !input.equals(EMPTY_STRING)) ? input : null;
+    }
+
+    private static Boolean checkBoolean(String input) {
+        return "true".equalsIgnoreCase(input);
     }
 }

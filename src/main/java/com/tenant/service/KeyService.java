@@ -1,27 +1,26 @@
 package com.tenant.service;
 
+import com.tenant.cache.CacheClientService;
+import com.tenant.cache.CacheConstant;
 import com.tenant.constant.FinanceConstant;
+import com.tenant.constant.SecurityConstant;
 import com.tenant.dto.account.KeyWrapperDto;
 import com.tenant.dto.account.SubKeyWrapperDto;
 import com.tenant.jwt.FinanceJwt;
-import com.tenant.storage.tenant.model.*;
-import com.tenant.storage.tenant.repository.*;
 import com.tenant.service.impl.UserServiceImpl;
-import com.tenant.utils.AESUtils;
 import com.tenant.utils.RSAUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.util.Map;
 import java.util.concurrent.ConcurrentMap;
 
 @Service
 public class KeyService {
     @Autowired
     private UserServiceImpl userService;
-    @Autowired
-    private AccountRepository accountRepository;
     private final ConcurrentMap<String, String> concurrentMap;
     @Value("${aes.secret-key.key-information}")
     private String keyInformationSecretKey;
@@ -29,12 +28,14 @@ public class KeyService {
     private String financeSecretKey;
     @Value("${aes.secret-key.decrypt-password}")
     private String encryptPasswordSecretKey;
+    @Autowired
+    private CacheClientService cacheClientService;
 
     public KeyService(@Qualifier("applicationConfig") ConcurrentMap<String, String> concurrentMap) {
         this.concurrentMap = concurrentMap;
     }
 
-    public long getCurrentUser(){
+    public long getCurrentUser() {
         FinanceJwt financeJwt = userService.getAddInfoFromToken();
         return financeJwt.getAccountId();
     }
@@ -51,23 +52,38 @@ public class KeyService {
         return concurrentMap.get(FinanceConstant.DECRYPT_PASSWORD_SECRET_KEY);
     }
 
-    public String getUserSecretKey(){
-        Account account = accountRepository.findById(getCurrentUser()).orElse(null);
-        if (account != null){
-            return AESUtils.decrypt(getKeyInformationSecretKey(), account.getSecretKey(), FinanceConstant.AES_ZIP_ENABLE);
+    public String getUserSecretKey() {
+        try {
+            FinanceJwt financeJwt = userService.getAddInfoFromToken();
+            return financeJwt.getSecretKey();
+        } catch (Exception ignored) {
+            return null;
         }
-        return null;
     }
 
-    public String getUserPublicKey(){
-        Account account = accountRepository.findById(getCurrentUser()).orElse(null);
-        if (account != null){
-            return account.getPublicKey();
+    public String getUserPublicKey() {
+        try {
+            Map<String, Object> attributes = userService.getAttributesFromToken();
+            String grantType = String.valueOf(attributes.get("grant_type"));
+            String username = String.valueOf(attributes.get("username"));
+            String tenantName = String.valueOf(attributes.get("tenant_name"));
+            String key;
+            if (SecurityConstant.GRANT_TYPE_EMPLOYEE.equals(grantType)) {
+                key = cacheClientService.getKeyString(CacheConstant.KEY_EMPLOYEE, username, tenantName);
+            } else if (SecurityConstant.GRANT_TYPE_MOBILE.equals(grantType)) {
+                key = cacheClientService.getKeyString(CacheConstant.KEY_MOBILE, username, tenantName);
+            } else if (SecurityConstant.GRANT_TYPE_CUSTOMER.equals(grantType)) {
+                key = cacheClientService.getKeyString(CacheConstant.KEY_CUSTOMER, username, tenantName);
+            } else {
+                return null;
+            }
+            return cacheClientService.getPublicKey(key);
+        } catch (Exception ignored) {
+            return null;
         }
-        return null;
     }
 
-    public void clearConcurrentMap(){
+    public void clearConcurrentMap() {
         concurrentMap.clear();
     }
 
@@ -88,7 +104,7 @@ public class KeyService {
     }
 
     public void setMasterKey(String privateKey) {
-        String decryptFinanceSecretKey= RSAUtils.decrypt(privateKey, financeSecretKey);
+        String decryptFinanceSecretKey = RSAUtils.decrypt(privateKey, financeSecretKey);
         String decryptKeyInformationSecretKey = RSAUtils.decrypt(privateKey, keyInformationSecretKey);
         String decryptPasswordSecretKey = RSAUtils.decrypt(privateKey, encryptPasswordSecretKey);
         concurrentMap.put(FinanceConstant.PRIVATE_KEY, privateKey);

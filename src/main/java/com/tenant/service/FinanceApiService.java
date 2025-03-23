@@ -128,17 +128,6 @@ public class FinanceApiService {
         commonAsyncService.sendEmail(email,msg,subject,html);
     }
 
-    public String convertGroupToUri(List<Permission> permissions){
-        if(permissions!=null){
-            StringBuilder builderPermission = new StringBuilder();
-            for(Permission p : permissions){
-                builderPermission.append(p.getAction().trim().replace("/v1","")+",");
-            }
-            return  builderPermission.toString();
-        }
-        return null;
-    }
-
     public String getOrderStt(Long storeId){
         return financeOTPService.orderStt(storeId);
     }
