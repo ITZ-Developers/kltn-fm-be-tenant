@@ -46,7 +46,7 @@ public class LogInterceptor implements HandlerInterceptor {
     @Autowired
     private CacheClientService cacheClientService;
     private static final List<String> ALLOWED_URLS = Arrays.asList(
-            "/v1/account/**", "/v1/group/**", "/v1/permission/**"
+            "/v1/account/**", "/v1/group/**"
     );
     private static final List<String> NOT_ALLOWED_URLS = Arrays.asList(
             "/v1/account/request-key", "/v1/account/my-key"
@@ -64,7 +64,7 @@ public class LogInterceptor implements HandlerInterceptor {
         if (DispatcherType.REQUEST.name().equals(request.getDispatcherType().name())
                 && request.getMethod().equals(HttpMethod.GET.name())) {
         }
-        if (StringUtils.isBlank(concurrentMap.get(FinanceConstant.PRIVATE_KEY))) {
+        if (!isUrlAllowed(request.getRequestURI()) && StringUtils.isBlank(concurrentMap.get(FinanceConstant.PRIVATE_KEY))) {
             return handleUnauthorized(response, ErrorCode.GENERAL_ERROR_SYSTEM_NOT_READY, "Not ready");
         }
         if (!isAllowed(request, WHITE_LIST) && !isValidSession()) {
