@@ -29,6 +29,7 @@ public interface GroupMapper {
     @Mapping(source = "groupPermissions", target = "groupPermissions", qualifiedByName = "fromEntityListToGroupPermissionDtoList")
     @Mapping(source = "status", target = "status")
     @Mapping(source = "createdDate", target = "createdDate")
+    @Mapping(source = "modifiedDate", target = "modifiedDate")
     @BeanMapping(ignoreByDefault = true)
     @Named("fromEntityToGroupAdminDto")
     GroupAdminDto fromEntityToGroupAdminDto(Group group);

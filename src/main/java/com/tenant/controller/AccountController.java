@@ -415,6 +415,8 @@ public class AccountController extends ABasicController {
         List<GroupPermission> permissions = groupPermissionRepository.findAllByGroupId(employee.getGroup().getId());
         List<Long> permissionIds = permissions.stream().map(GroupPermission::getPermissionId).collect(Collectors.toList());
         loginEmployeeForm.setPermissionIds(permissionIds);
+        employee.setLastLogin(new Date());
+        accountRepository.save(employee);
         return feignDbConfigAuthService.loginEmployee(masterApiKey, loginEmployeeForm);
     }
 }

@@ -40,8 +40,8 @@ public class SessionService {
         Map<Long, Date> accountIdToLatestLogin = new HashMap<>();
 
         for (AccountAdminDto account : accounts) {
-            String keyEmp = cacheClientService.getKeyString(CacheConstant.KEY_EMPLOYEE, account.getUsername(), null);
-            String keyMob = cacheClientService.getKeyString(CacheConstant.KEY_MOBILE, account.getUsername(), null);
+            String keyEmp = cacheClientService.getKeyString(CacheConstant.KEY_EMPLOYEE, account.getUsername(), TenantDBContext.getCurrentTenant());
+            String keyMob = cacheClientService.getKeyString(CacheConstant.KEY_MOBILE, account.getUsername(), TenantDBContext.getCurrentTenant());
 
             keyToAccountMap.put(keyEmp, account);
             keyToAccountMap.put(keyMob, account);

@@ -46,7 +46,7 @@ public class LogInterceptor implements HandlerInterceptor {
     @Autowired
     private CacheClientService cacheClientService;
     private static final List<String> ALLOWED_URLS = Arrays.asList(
-            "/v1/account/**", "/v1/group/**"
+            "/v1/account/**", "/v1/group/**", "/v1/department/**"
     );
     private static final List<String> NOT_ALLOWED_URLS = Arrays.asList(
             "/v1/account/request-key", "/v1/account/my-key"
