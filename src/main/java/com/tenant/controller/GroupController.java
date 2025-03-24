@@ -54,7 +54,7 @@ public class GroupController extends ABasicController{
             return makeErrorResponse(ErrorCode.GROUP_ERROR_NOT_FOUND, "Not found group");
         }
         GroupAdminDto dto = groupMapper.fromEntityToGroupAdminDto(group);
-        dto.setRole(feignDbConfigAuthService.getRoleEmployee(masterApiKey));
+        dto.setRole(feignDbConfigAuthService.getRoleEmployee(masterApiKey).getData());
         return makeSuccessResponse(dto, "Get group success");
     }
 
