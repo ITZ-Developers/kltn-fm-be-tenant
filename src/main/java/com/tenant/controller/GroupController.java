@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/v1/group")
@@ -142,5 +143,11 @@ public class GroupController extends ABasicController{
         groupRepository.save(group);
         groupRepository.deleteById(id);
         return makeSuccessResponse(null, "Delete group success");
+    }
+
+    @GetMapping(value = "/employee", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PreAuthorize("hasRole('RO_C')")
+    public ApiMessageDto<Object> getRoleEmployee() {
+        return feignDbConfigAuthService.getRoleEmployee(masterApiKey);
     }
 }
