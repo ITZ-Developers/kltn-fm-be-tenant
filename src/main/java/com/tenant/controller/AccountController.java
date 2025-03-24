@@ -305,9 +305,6 @@ public class AccountController extends ABasicController {
             accountRepository.save(account);
             return makeErrorResponse(ErrorCode.ACCOUNT_ERROR_OTP_INVALID, "OTP code invalid or has expired");
         }
-        if (passwordEncoder.matches(resetPasswordForm.getNewPassword(), account.getPassword())) {
-            return makeErrorResponse(ErrorCode.ACCOUNT_ERROR_NEW_PASSWORD_INVALID, "New password must be different from old password");
-        }
         account.setResetPwdTime(null);
         account.setResetPwdCode(null);
         account.setAttemptCode(null);
