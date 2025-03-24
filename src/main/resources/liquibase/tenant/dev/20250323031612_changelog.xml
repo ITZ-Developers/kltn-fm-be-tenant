@@ -81,4 +81,12 @@
     <changeSet author="Tenant" id="1742699793536-20">
         <dropColumn columnName="secret_key" tableName="db_fn_account"/>
     </changeSet>
+    <changeSet author="Tenant" id="1742699793536-21">
+        <sql>
+            <![CDATA[
+            DELETE FROM db_fn_account WHERE id = 2;
+            DELETE FROM db_fn_group WHERE id = 15;
+            ]]>
+        </sql>
+    </changeSet>
 </databaseChangeLog>
