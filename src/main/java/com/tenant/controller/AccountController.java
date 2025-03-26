@@ -356,7 +356,7 @@ public class AccountController extends ABasicController {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.TEXT_PLAIN);
         String timeStamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("ddMMyyyyHHmmss"));
-        String filename = "key_information_" + timeStamp + ".txt";
+        String filename = "\"key_information_" + timeStamp + ".txt\"";
         headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + filename);
         return ResponseEntity.ok()
                 .headers(headers)
