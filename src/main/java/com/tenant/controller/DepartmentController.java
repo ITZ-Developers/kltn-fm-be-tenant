@@ -6,6 +6,7 @@ import com.tenant.dto.ErrorCode;
 import com.tenant.dto.ResponseListDto;
 import com.tenant.dto.department.DepartmentAdminDto;
 import com.tenant.dto.department.DepartmentDto;
+import com.tenant.exception.BadRequestException;
 import com.tenant.form.department.CreateDepartmentForm;
 import com.tenant.form.department.UpdateDepartmentForm;
 import com.tenant.mapper.DepartmentMapper;
@@ -104,10 +105,12 @@ public class DepartmentController extends ABasicController{
     @PreAuthorize("hasRole('DE_D')")
     public ApiMessageDto<String> delete(@PathVariable("id") Long id) {
         Department department = departmentRepository.findById(id).orElse(null);
-        if(department == null){
+        if (department == null) {
             return makeErrorResponse(ErrorCode.DEPARTMENT_ERROR_NOT_FOUND, "Not found department");
         }
-        accountRepository.updateAllByDepartmentId(id);
+        if (accountRepository.existsByDepartmentId(id)) {
+            throw new BadRequestException(ErrorCode.GENERAL_ERROR_NOT_ALLOWED_DELETE, "Account existed with this department");
+        }
         departmentRepository.deleteById(id);
         return makeSuccessResponse(null, "Delete department success");
     }

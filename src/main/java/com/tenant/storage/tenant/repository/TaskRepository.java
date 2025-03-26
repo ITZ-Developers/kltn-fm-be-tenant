@@ -23,4 +23,5 @@ public interface TaskRepository extends JpaRepository<Task, Long>, JpaSpecificat
     void updateAllByParentId(@Param("projectId") Long projectId, @Param("parentId") Long parentId);
     @Query("SELECT COUNT(t) FROM Task t WHERE t.project.id = :projectId AND t.parent.id IS NULL")
     Integer countTotalTasksByProjectId(@Param("projectId") Long projectId);
+    Boolean existsByProjectId(Long id);
 }

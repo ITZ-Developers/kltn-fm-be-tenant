@@ -33,4 +33,5 @@ public interface AccountRepository extends JpaRepository<Account, Long>, JpaSpec
     Integer countAllAccounts();
     boolean existsByGroupId(Long groupId);
     List<Account> findAllByGroupId(Long groupId);
+    Boolean existsByDepartmentId(Long id);
 }

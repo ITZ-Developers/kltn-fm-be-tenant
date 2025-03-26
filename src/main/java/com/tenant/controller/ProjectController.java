@@ -6,6 +6,7 @@ import com.tenant.dto.ErrorCode;
 import com.tenant.dto.ResponseListDto;
 import com.tenant.dto.project.ProjectAdminDto;
 import com.tenant.dto.project.ProjectDto;
+import com.tenant.exception.BadRequestException;
 import com.tenant.form.project.CreateProjectForm;
 import com.tenant.form.project.UpdateProjectForm;
 import com.tenant.mapper.ProjectMapper;
@@ -172,8 +173,10 @@ public class ProjectController extends ABasicController {
             return makeErrorResponse(ErrorCode.PROJECT_ERROR_NOT_FOUND, "Not found project");
         }
         String decryptOldLogo = AESUtils.decrypt(keyService.getFinanceSecretKey(), project.getLogo(), FinanceConstant.AES_ZIP_ENABLE);
+        if (taskRepository.existsByProjectId(id)) {
+            throw new BadRequestException(ErrorCode.GENERAL_ERROR_NOT_ALLOWED_DELETE, "Task existed with this project");
+        }
         financeApiService.deleteFile(decryptOldLogo);
-        taskRepository.updateAllByProjectId(id);
         projectRepository.deleteById(id);
         return makeSuccessResponse(null, "Delete project success");
     }

@@ -25,4 +25,5 @@ public interface KeyInformationRepository extends JpaRepository<KeyInformation, 
     @Modifying
     @Query("UPDATE KeyInformation k SET k.tag.id = NULL WHERE k.tag.id = :tagId")
     void updateAllByTagId(@Param("tagId") Long tagId);
+    Boolean existsByKeyInformationGroupId(Long id);
 }

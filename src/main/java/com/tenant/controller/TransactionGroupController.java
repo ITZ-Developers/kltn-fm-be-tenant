@@ -6,6 +6,7 @@ import com.tenant.dto.ErrorCode;
 import com.tenant.dto.ResponseListDto;
 import com.tenant.dto.transactionGroup.TransactionGroupAdminDto;
 import com.tenant.dto.transactionGroup.TransactionGroupDto;
+import com.tenant.exception.BadRequestException;
 import com.tenant.form.transactionGroup.CreateTransactionGroupForm;
 import com.tenant.form.transactionGroup.UpdateTransactionGroupForm;
 import com.tenant.mapper.TransactionGroupMapper;
@@ -125,8 +126,12 @@ public class TransactionGroupController extends ABasicController{
         if (transactionGroup == null){
             return makeErrorResponse(ErrorCode.TRANSACTION_GROUP_ERROR_NOT_FOUND, "Not found transaction group");
         }
-        transactionRepository.updateAllByTransactionGroupId(id);
-        debitRepository.updateAllByTransactionGroupId(id);
+        if (transactionRepository.existsByTransactionGroupId(id)) {
+            throw new BadRequestException(ErrorCode.GENERAL_ERROR_NOT_ALLOWED_DELETE, "Transaction existed in this group");
+        }
+        if (debitRepository.existsByTransactionGroupId(id)) {
+            throw new BadRequestException(ErrorCode.GENERAL_ERROR_NOT_ALLOWED_DELETE, "Debit existed in this group");
+        }
         transactionGroupRepository.deleteById(id);
         return makeSuccessResponse(null, "Delete transaction group success");
     }

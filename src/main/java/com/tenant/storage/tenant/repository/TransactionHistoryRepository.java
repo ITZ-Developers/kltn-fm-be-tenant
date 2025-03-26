@@ -13,4 +13,7 @@ public interface TransactionHistoryRepository extends JpaRepository<TransactionH
     @Modifying
     @Query("UPDATE TransactionHistory th SET th.account.id = NULL WHERE th.account.id = :accountId")
     void updateAllByAccountId(@Param("accountId") Long accountId);
+    @Transactional
+    @Modifying
+    void deleteAllByAccountId(Long id);
 }

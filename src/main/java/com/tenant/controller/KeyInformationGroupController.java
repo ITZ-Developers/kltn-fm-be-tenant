@@ -6,6 +6,7 @@ import com.tenant.dto.ErrorCode;
 import com.tenant.dto.ResponseListDto;
 import com.tenant.dto.keyInformationGroup.KeyInformationGroupAdminDto;
 import com.tenant.dto.keyInformationGroup.KeyInformationGroupDto;
+import com.tenant.exception.BadRequestException;
 import com.tenant.form.keyInformationGroup.CreateKeyInformationGroupForm;
 import com.tenant.form.keyInformationGroup.UpdateKeyInformationGroupForm;
 import com.tenant.mapper.KeyInformationGroupMapper;
@@ -124,7 +125,9 @@ public class KeyInformationGroupController extends ABasicController {
         if (keyInformationGroup == null) {
             return makeErrorResponse(ErrorCode.KEY_INFORMATION_GROUP_ERROR_NOT_FOUND, "Not found key information group");
         }
-        keyInformationRepository.updateAllByKeyInformationGroupId(id);
+        if (keyInformationRepository.existsByKeyInformationGroupId(id)) {
+            throw new BadRequestException(ErrorCode.GENERAL_ERROR_NOT_ALLOWED_DELETE, "Key existed with this group");
+        }
         keyInformationGroupRepository.deleteById(id);
         return makeSuccessResponse(null, "Delete key information group success");
     }

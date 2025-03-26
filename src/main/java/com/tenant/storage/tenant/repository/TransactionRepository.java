@@ -37,4 +37,5 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long>,
     @Modifying
     @Query("UPDATE Transaction t SET t.tag.id = NULL WHERE t.tag.id = :tagId")
     void updateAllByTagId(@Param("tagId") Long tagId);
+    Boolean existsByTransactionGroupId(Long id);
 }

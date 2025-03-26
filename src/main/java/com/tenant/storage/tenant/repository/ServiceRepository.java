@@ -29,4 +29,5 @@ public interface ServiceRepository extends JpaRepository<Service, Long>, JpaSpec
     @Modifying
     @Query("UPDATE Service s SET s.tag.id = NULL WHERE s.tag.id = :tagId")
     void updateAllByTagId(@Param("tagId") Long tagId);
+    Boolean existsByServiceGroupId(Long id);
 }

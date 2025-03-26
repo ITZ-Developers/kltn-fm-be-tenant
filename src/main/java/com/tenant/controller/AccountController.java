@@ -227,7 +227,7 @@ public class AccountController extends ABasicController {
             return makeErrorResponse(ErrorCode.ACCOUNT_ERROR_NOT_ALLOW_DELETE_YOURSELF, "Not allow to delete yourself");
         }
         financeApiService.deleteFile(account.getAvatarPath());
-        transactionHistoryRepository.updateAllByAccountId(id);
+        transactionHistoryRepository.deleteAllByAccountId(id);
         keyInformationRepository.updateAllByAccountId(id);
         accountRepository.deleteById(id);
         if (FinanceConstant.STATUS_ACTIVE.equals(account.getStatus())) {

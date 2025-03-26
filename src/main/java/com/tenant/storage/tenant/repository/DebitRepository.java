@@ -26,4 +26,5 @@ public interface DebitRepository extends JpaRepository<Debit, Long>, JpaSpecific
     @Modifying
     @Query("UPDATE Debit d SET d.tag.id = NULL WHERE d.tag.id = :tagId")
     void updateAllByTagId(@Param("tagId") Long tagId);
+    Boolean existsByTransactionGroupId(Long id);
 }

@@ -6,6 +6,7 @@ import com.tenant.dto.ErrorCode;
 import com.tenant.dto.ResponseListDto;
 import com.tenant.dto.serviceGroup.ServiceGroupAdminDto;
 import com.tenant.dto.serviceGroup.ServiceGroupDto;
+import com.tenant.exception.BadRequestException;
 import com.tenant.form.serviceGroup.CreateServiceGroupForm;
 import com.tenant.form.serviceGroup.UpdateServiceGroupForm;
 import com.tenant.mapper.ServiceGroupMapper;
@@ -116,6 +117,9 @@ public class ServiceGroupController extends ABasicController {
         ServiceGroup serviceGroup = serviceGroupRepository.findById(id).orElse(null);
         if (serviceGroup == null) {
             return makeErrorResponse(ErrorCode.SERVICE_GROUP_ERROR_NOT_FOUND, "Not found service group");
+        }
+        if (serviceRepository.existsByServiceGroupId(id)) {
+            throw new BadRequestException(ErrorCode.GENERAL_ERROR_NOT_ALLOWED_DELETE, "Service existed in this group");
         }
         serviceRepository.updateAllByServiceGroupId(id);
         serviceGroupRepository.deleteById(id);

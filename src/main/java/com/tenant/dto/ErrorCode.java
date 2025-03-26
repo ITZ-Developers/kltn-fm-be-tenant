@@ -4,6 +4,7 @@ public class ErrorCode {
     /**
      * Starting error code Account
      */
+    public static final String GENERAL_ERROR_NOT_ALLOWED_DELETE = "ERROR-NOT-ALLOWED-DELETE";
     public static final String GENERAL_ERROR_SYSTEM_NOT_READY = "ERROR-SYSTEM-NOT-READY";
     public static final String GENERAL_ERROR_INVALID_SESSION = "ERROR-INVALID-SESSION";
     public static final String GENERAL_ERROR_INVALID_API_KEY = "ERROR-INVALID-API-KEY";
