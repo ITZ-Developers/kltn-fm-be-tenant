@@ -35,6 +35,6 @@ public interface FeignCacheService {
     @PostMapping(value = "/v1/cache/put-public-key")
     ApiMessageDto<String> putPublicKey(@RequestHeader(FeignConstant.HEADER_X_API_KEY) String apiKey, @RequestBody PutPublicKeyForm form);
 
-    @PostMapping(value = "/v1/cache/get-public-key/{key}")
+    @GetMapping(value = "/v1/cache/get-public-key/{key}")
     ApiMessageDto<GetPublicKeyDto> getPublicKey(@RequestHeader(FeignConstant.HEADER_X_API_KEY) String apiKey, @PathVariable("key") String key);
 }
