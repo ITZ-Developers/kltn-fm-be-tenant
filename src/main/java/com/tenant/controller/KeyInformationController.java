@@ -125,7 +125,7 @@ public class KeyInformationController extends ABasicController {
     @PreAuthorize("hasRole('KE_I_C')")
     public ApiMessageDto<String> create(@Valid @RequestBody CreateKeyInformationForm createKeyInformationForm, BindingResult bindingResult) {
         Account account = accountRepository.findById(getCurrentUser()).orElse(null);
-        if (account == null) {
+        if (!isCustomer() && account == null) {
             return makeErrorResponse(ErrorCode.ACCOUNT_ERROR_NOT_FOUND, "Not found account");
         }
         KeyInformation keyInformation = keyInformationMapper.fromCreateKeyInformationFormToEncryptEntity(createKeyInformationForm, keyService.getKeyInformationSecretKey());
