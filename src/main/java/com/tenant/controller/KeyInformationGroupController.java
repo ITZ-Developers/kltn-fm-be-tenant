@@ -41,6 +41,10 @@ public class KeyInformationGroupController extends ABasicController {
     private KeyInformationRepository keyInformationRepository;
     @Autowired
     private KeyService keyService;
+    @Autowired
+    private KeyInformationPermissionRepository keyInformationPermissionRepository;
+    @Autowired
+    private AccountRepository accountRepository;
 
     @GetMapping(value = "/get/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     @PreAuthorize("hasRole('KE_I_G_V')")
@@ -96,6 +100,17 @@ public class KeyInformationGroupController extends ABasicController {
         }
         KeyInformationGroup keyInformationGroup = keyInformationGroupMapper.fromCreateKeyInformationGroupFormToEntity(createKeyInformationGroupForm, keyService.getFinanceSecretKey());
         keyInformationGroupRepository.save(keyInformationGroup);
+        if (!isCustomer()) {
+            Account account = accountRepository.findById(getCurrentUser()).orElse(null);
+            if (account == null) {
+                throw new BadRequestException(ErrorCode.ACCOUNT_ERROR_NOT_FOUND, "Not found account");
+            }
+            KeyInformationPermission keyInformationPermission = new KeyInformationPermission();
+            keyInformationPermission.setKeyInformationGroup(keyInformationGroup);
+            keyInformationPermission.setPermissionKind(FinanceConstant.PERMISSION_KIND_GROUP);
+            keyInformationPermission.setAccount(account);
+            keyInformationPermissionRepository.save(keyInformationPermission);
+        }
         return makeSuccessResponse(null, "Create key information group success");
     }
 

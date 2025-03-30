@@ -41,6 +41,10 @@ public class ServiceGroupController extends ABasicController {
     private ServiceGroupMapper serviceGroupMapper;
     @Autowired
     private KeyService keyService;
+    @Autowired
+    private AccountRepository accountRepository;
+    @Autowired
+    private ServicePermissionRepository servicePermissionRepository;
 
     @GetMapping(value = "/get/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     @PreAuthorize("hasRole('SE_G_V')")
@@ -89,6 +93,17 @@ public class ServiceGroupController extends ABasicController {
             return makeErrorResponse(ErrorCode.SERVICE_GROUP_ERROR_NAME_EXISTED, "Name service group existed");
         }
         serviceGroupRepository.save(serviceGroup);
+        if (!isCustomer()) {
+            Account account = accountRepository.findById(getCurrentUser()).orElse(null);
+            if (account == null) {
+                throw new BadRequestException(ErrorCode.ACCOUNT_ERROR_NOT_FOUND, "Not found account");
+            }
+            ServicePermission permission = new ServicePermission();
+            permission.setServiceGroup(serviceGroup);
+            permission.setPermissionKind(FinanceConstant.PERMISSION_KIND_GROUP);
+            permission.setAccount(account);
+            servicePermissionRepository.save(permission);
+        }
         return makeSuccessResponse(null, "Create service group success");
     }
 

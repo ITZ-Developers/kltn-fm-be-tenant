@@ -43,6 +43,10 @@ public class TransactionGroupController extends ABasicController{
     private DebitRepository debitRepository;
     @Autowired
     private KeyService keyService;
+    @Autowired
+    private AccountRepository accountRepository;
+    @Autowired
+    private TransactionPermissionRepository transactionPermissionRepository;
 
     @GetMapping(value = "/get/{id}", produces= MediaType.APPLICATION_JSON_VALUE)
     @PreAuthorize("hasRole('TR_G_V')")
@@ -97,6 +101,17 @@ public class TransactionGroupController extends ABasicController{
             return makeErrorResponse(ErrorCode.TRANSACTION_GROUP_ERROR_NAME_EXISTED, "Name transaction group existed");
         }
         transactionGroupRepository.save(transactionGroup);
+        if (!isCustomer()) {
+            Account account = accountRepository.findById(getCurrentUser()).orElse(null);
+            if (account == null) {
+                throw new BadRequestException(ErrorCode.ACCOUNT_ERROR_NOT_FOUND, "Not found account");
+            }
+            TransactionPermission permission = new TransactionPermission();
+            permission.setTransactionGroup(transactionGroup);
+            permission.setPermissionKind(FinanceConstant.PERMISSION_KIND_GROUP);
+            permission.setAccount(account);
+            transactionPermissionRepository.save(permission);
+        }
         return makeSuccessResponse(null, "Create transaction group success");
     }
 

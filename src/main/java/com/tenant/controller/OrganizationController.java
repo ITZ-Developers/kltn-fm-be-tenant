@@ -6,6 +6,7 @@ import com.tenant.dto.ErrorCode;
 import com.tenant.dto.ResponseListDto;
 import com.tenant.dto.organization.OrganizationAdminDto;
 import com.tenant.dto.organization.OrganizationDto;
+import com.tenant.exception.BadRequestException;
 import com.tenant.form.organization.CreateOrganizationForm;
 import com.tenant.form.organization.UpdateOrganizationForm;
 import com.tenant.mapper.OrganizationMapper;
@@ -46,6 +47,10 @@ public class OrganizationController extends ABasicController {
     private FinanceApiService financeApiService;
     @Autowired
     private ProjectRepository projectRepository;
+    @Autowired
+    private AccountRepository accountRepository;
+    @Autowired
+    private OrganizationPermissionRepository organizationPermissionRepository;
 
     @GetMapping(value = "/get/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     @PreAuthorize("hasRole('OR_V')")
@@ -101,6 +106,16 @@ public class OrganizationController extends ABasicController {
         }
         Organization organization = organizationMapper.fromCreateOrganizationFormToEntity(createOrganizationForm, keyService.getFinanceSecretKey());
         organizationRepository.save(organization);
+        if (!isCustomer()) {
+            Account account = accountRepository.findById(getCurrentUser()).orElse(null);
+            if (account == null) {
+                throw new BadRequestException(ErrorCode.ACCOUNT_ERROR_NOT_FOUND, "Not found account");
+            }
+            OrganizationPermission permission = new OrganizationPermission();
+            permission.setOrganization(organization);
+            permission.setAccount(account);
+            organizationPermissionRepository.save(permission);
+        }
         return makeSuccessResponse(null, "Create organization success");
     }
 

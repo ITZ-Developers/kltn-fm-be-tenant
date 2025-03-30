@@ -49,6 +49,10 @@ public class ProjectController extends ABasicController {
     private FinanceApiService financeApiService;
     @Autowired
     private TagRepository tagRepository;
+    @Autowired
+    private AccountRepository accountRepository;
+    @Autowired
+    private TaskPermissionRepository taskPermissionRepository;
 
     @GetMapping(value = "/get/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     @PreAuthorize("hasRole('PR_V')")
@@ -121,6 +125,17 @@ public class ProjectController extends ABasicController {
             project.setTag(tag);
         }
         projectRepository.save(project);
+        if (!isCustomer()) {
+            Account account = accountRepository.findById(getCurrentUser()).orElse(null);
+            if (account == null) {
+                throw new BadRequestException(ErrorCode.ACCOUNT_ERROR_NOT_FOUND, "Not found account");
+            }
+            TaskPermission permission = new TaskPermission();
+            permission.setProject(project);
+            permission.setPermissionKind(FinanceConstant.PERMISSION_KIND_GROUP);
+            permission.setAccount(account);
+            taskPermissionRepository.save(permission);
+        }
         return makeSuccessResponse(null, "Create project success");
     }
 

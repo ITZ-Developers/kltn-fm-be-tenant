@@ -120,7 +120,6 @@ public class ResetDataController extends ABasicController{
         return makeSuccessResponse(null, "Reset key information success");
     }
 
-    @ApiIgnore
     @PostMapping(value = "/notification-create", produces = MediaType.APPLICATION_JSON_VALUE)
     public ApiMessageDto<String> createNotification(@Valid @RequestBody CreateNotificationForm createNotificationForm, BindingResult bindingResult) {
         Notification notification = notificationMapper.fromCreateNotificationFormToEntity(createNotificationForm);
