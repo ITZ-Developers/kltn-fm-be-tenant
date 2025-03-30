@@ -84,6 +84,9 @@ public class NotificationController extends ABasicController {
 
     @GetMapping(value = "/my-notification", produces = MediaType.APPLICATION_JSON_VALUE)
     public ApiMessageDto<MyNotificationDto> getMyNotifications(NotificationCriteria notificationCriteria, Pageable pageable) {
+        if (notificationCriteria.getIsPaged().equals(FinanceConstant.IS_PAGED_FALSE)){
+            pageable = PageRequest.of(0, Integer.MAX_VALUE);
+        }
         notificationCriteria.setAccountId(getCurrentUser());
         notificationCriteria.setStatus(FinanceConstant.STATUS_ACTIVE);
         Page<Notification> notifications = notificationRepository.findAll(notificationCriteria.getCriteria(), pageable);
