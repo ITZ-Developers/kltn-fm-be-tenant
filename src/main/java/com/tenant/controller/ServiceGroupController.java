@@ -63,6 +63,9 @@ public class ServiceGroupController extends ABasicController {
         if (serviceGroupCriteria.getIsPaged().equals(FinanceConstant.IS_PAGED_FALSE)){
             pageable = PageRequest.of(0, Integer.MAX_VALUE);
         }
+        if (!isCustomer()) {
+            serviceGroupCriteria.setPermissionAccountId(getCurrentUser());
+        }
         Page<ServiceGroup> serviceGroups = serviceGroupRepository.findAll(serviceGroupCriteria.getCriteria(), pageable);
         ResponseListDto<List<ServiceGroupAdminDto>> responseListObj = new ResponseListDto<>();
         List<ServiceGroupAdminDto> serviceGroupAdminDtos = serviceGroupMapper.fromEncryptEntityListToEncryptServiceGroupAdminDtoList(serviceGroups.getContent(), keyService.getFinanceKeyWrapper());
@@ -74,6 +77,9 @@ public class ServiceGroupController extends ABasicController {
 
     @GetMapping(value = "/auto-complete", produces = MediaType.APPLICATION_JSON_VALUE)
     public ApiMessageDto<ResponseListDto<List<ServiceGroupDto>>> autoComplete(ServiceGroupCriteria serviceGroupCriteria) {
+        if (!isCustomer()) {
+            serviceGroupCriteria.setPermissionAccountId(getCurrentUser());
+        }
         Pageable pageable = serviceGroupCriteria.getIsPaged().equals(FinanceConstant.IS_PAGED_TRUE) ? PageRequest.of(0, 10) : PageRequest.of(0, Integer.MAX_VALUE);
         serviceGroupCriteria.setStatus(FinanceConstant.STATUS_ACTIVE);
         Page<ServiceGroup> serviceGroups = serviceGroupRepository.findAll(serviceGroupCriteria.getCriteria(), pageable);
