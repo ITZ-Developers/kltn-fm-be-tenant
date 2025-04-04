@@ -221,4 +221,21 @@ public class ErrorCode {
      */
     public static final String TAG_ERROR_NOT_FOUND = "ERROR-TAG-0000";
     public static final String TAG_ERROR_NAME_EXISTED = "ERROR-TAG-0001";
+    /**
+     * Starting error code Chatroom
+     */
+    public static final String CHATROOM_ERROR_NOT_FOUND = "ERROR-CHATROOM-0000";
+    public static final String CHATROOM_ERROR_NO_OWNER = "ERROR-CHATROOM-0001";
+
+    /**
+     * Starting error code Chat Room Member
+     */
+    public static final String CHAT_ROOM_MEMBER_ERROR_NOT_FOUND = "ERROR-CHAT-ROOM-MEMBER-0000";
+    public static final String CHAT_ROOM_MEMBER_ERROR_NO_JOIN = "ERROR-CHAT-ROOM-MEMBER-0001";
+    /**
+     * Starting error code Message
+     */
+    public static final String MESSAGE_ERROR_NOT_FOUND = "ERROR-MESSAGE-0000";
+    public static final String MESSAGE_ERROR_NO_OWNER = "ERROR-MESSAGE-0001";
+
 }

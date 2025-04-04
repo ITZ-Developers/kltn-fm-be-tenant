@@ -101,6 +101,9 @@ public class FinanceConstant {
     public static final Integer TAG_KIND_KEY_INFORMATION = 3;
     public static final Integer TAG_KIND_PROJECT = 4;
 
+    public static final Integer CHATROOM_KIND_GROUP = 1;
+    public static final Integer CHATROOM_KIND_DIRECT_MESSAGE = 2;
+
     private FinanceConstant(){
         throw new IllegalStateException("Utility class");
     }
