@@ -11,6 +11,7 @@ public class FinanceConstant {
     public static final String CMD_CREATE_PAYMENT_PERIOD = "CMD_CREATE_PAYMENT_PERIOD";
     public static final String CMD_SCHEDULE_SERVICE = "CMD_SCHEDULE_SERVICE";
     public static final String CMD_LOCK_DEVICE = "CMD_LOCK_DEVICE";
+    public static final String CMD_LOGIN_QR_CODE = "CMD_LOGIN_QR_CODE";
 
     public static final String NAME_PATTERN = "^[\\p{L} ]+$";
     public static final String USERNAME_PATTERN = "^[a-z0-9_]+$";

@@ -5,12 +5,17 @@ import com.tenant.cache.CacheConstant;
 import com.tenant.cache.SessionService;
 import com.tenant.constant.FinanceConstant;
 import com.tenant.constant.SecurityConstant;
-import com.tenant.dto.account.MyKeyDto;
+import com.tenant.dto.ApiResponse;
+import com.tenant.dto.account.*;
 import com.tenant.exception.BadRequestException;
 import com.tenant.form.account.*;
 import com.tenant.mapper.AccountMapper;
 import com.tenant.multitenancy.feign.FeignDbConfigAuthService;
 import com.tenant.multitenancy.tenant.TenantDBContext;
+import com.tenant.rabbit.RabbitService;
+import com.tenant.rabbit.form.ProcessTenantForm;
+import com.tenant.service.QrCodeService;
+import com.tenant.service.impl.UserServiceImpl;
 import com.tenant.service.mail.MailServiceImpl;
 import com.tenant.storage.tenant.model.*;
 import com.tenant.storage.tenant.model.criteria.*;
@@ -21,9 +26,6 @@ import com.tenant.utils.*;
 import com.tenant.dto.ApiMessageDto;
 import com.tenant.dto.ErrorCode;
 import com.tenant.dto.ResponseListDto;
-import com.tenant.dto.account.AccountAdminDto;
-import com.tenant.dto.account.AccountDto;
-import com.tenant.dto.account.AccountForgetPasswordDto;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,6 +51,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestController
@@ -92,6 +95,16 @@ public class AccountController extends ABasicController {
     private FeignDbConfigAuthService feignDbConfigAuthService;
     @Value("${master.api-key}")
     private String masterApiKey;
+    @Autowired
+    private QrCodeService qrCodeService;
+    @Value("${qr.validity}")
+    private Integer qrValidity;
+    @Autowired
+    private UserServiceImpl userService;
+    @Value("${rabbitmq.queue.notification}")
+    private String notificationQueue;
+    @Autowired
+    private RabbitService rabbitService;
 
     @GetMapping(value = "/get/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     @PreAuthorize("hasRole('EMP_V')")
@@ -415,5 +428,60 @@ public class AccountController extends ABasicController {
         employee.setLastLogin(new Date());
         accountRepository.save(employee);
         return feignDbConfigAuthService.loginEmployee(masterApiKey, loginEmployeeForm);
+    }
+
+    @PostMapping(value = "/request-login-qr-code", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ApiMessageDto<String> requestLoginQrCode(@Valid @RequestBody RequestLoginQrCodeForm form, BindingResult bindingResult) {
+        String value = qrCodeService.encryptAndZip(form.getClientId());
+        return makeSuccessResponse(value, "Get request qr code success");
+    }
+
+    @PostMapping(value = "/verify-login-qr-code", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ApiMessageDto<String> verifyQrCode(@Valid @RequestBody VerifyQrCodeForm verifyQrCodeForm, BindingResult bindingResult) {
+        Map<String, Object> attributes = userService.getAttributesFromToken();
+        String grantType = String.valueOf(attributes.get("grant_type"));
+        String tenantName = String.valueOf(attributes.get("tenant_name"));
+        long userId;
+        try {
+            userId = Long.parseLong(String.valueOf(attributes.get("user_id")));
+        } catch (Exception e) {
+            throw new BadRequestException(ErrorCode.ACCOUNT_ERROR_NOT_FOUND, "Not found account");
+        }
+        Account employee = accountRepository.findById(userId).orElse(null);
+        if (employee == null) {
+            throw new BadRequestException(ErrorCode.ACCOUNT_ERROR_NOT_FOUND, "Not found account");
+        }
+        if (!FinanceConstant.STATUS_ACTIVE.equals(employee.getStatus())) {
+            throw new BadRequestException(ErrorCode.ACCOUNT_ERROR_NOT_ACTIVE, "Account status is not active");
+        }
+        if (!SecurityConstant.GRANT_TYPE_MOBILE.equals(grantType)) {
+            throw new BadRequestException(ErrorCode.GENERAL_ERROR_INVALID_GRANT_TYPE, "Not allow to verify qr code");
+        }
+        QrCodeDto qrCodeDto = qrCodeService.decryptAndUnzip(verifyQrCodeForm.getQrCode());
+        Date expiredDate = new Date(qrCodeDto.getCurrentTime().getTime() + qrValidity * 1000); // 60s
+        if (expiredDate.before(new Date())) {
+            throw new BadRequestException(ErrorCode.GENERAL_ERROR_QR_CODE_EXPIRED, "QR code is expired!");
+        }
+        LoginEmployeeForm loginEmployeeForm = new LoginEmployeeForm();
+        loginEmployeeForm.setUsername(employee.getUsername());
+        loginEmployeeForm.setTenantId(tenantName);
+        loginEmployeeForm.setUserId(employee.getId());
+        loginEmployeeForm.setGrantType(SecurityConstant.GRANT_TYPE_EMPLOYEE);
+        List<GroupPermission> permissions = groupPermissionRepository.findAllByGroupId(employee.getGroup().getId());
+        List<Long> permissionIds = permissions.stream().map(GroupPermission::getPermissionId).collect(Collectors.toList());
+        loginEmployeeForm.setPermissionIds(permissionIds);
+        employee.setLastLogin(new Date());
+        accountRepository.save(employee);
+        String accessToken = feignDbConfigAuthService.loginEmployee(masterApiKey, loginEmployeeForm).getValue();
+        SendAccessTokenForm dataForm = new SendAccessTokenForm();
+        dataForm.setAccessToken(accessToken);
+        dataForm.setClientId(qrCodeDto.getClientId());
+        ProcessTenantForm<SendAccessTokenForm> form = new ProcessTenantForm<>();
+        form.setAppName(FinanceConstant.BACKEND_APP);
+        form.setQueueName(notificationQueue);
+        form.setCmd(FinanceConstant.CMD_LOGIN_QR_CODE);
+        form.setData(dataForm);
+        rabbitService.handleSendMsg(form);
+        return makeSuccessResponse(null, "Verify qr code success");
     }
 }
