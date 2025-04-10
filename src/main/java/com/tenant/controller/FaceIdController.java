@@ -91,6 +91,8 @@ public class FaceIdController extends ABasicController {
         if (!passwordEncoder.matches(form.getPassword(), account.getPassword())) {
             throw new BadRequestException(ErrorCode.ACCOUNT_ERROR_WRONG_PASSWORD, "Wrong password");
         }
+        account.setIsFaceIdRegistered(false);
+        accountRepository.save(account);
         return feignCacheService.deleteFaceId(cacheApiKey, account.getUsername());
     }
 }
