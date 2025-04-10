@@ -42,7 +42,7 @@ public class FaceIdController extends ABasicController {
     private PasswordEncoder passwordEncoder;
 
     @PostMapping(value = "/register", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ApiMessageDto<String> register(@Valid @RequestBody RegisterFaceIdForm form, BindingResult bindingResult) {
+    public ApiMessageDto<Object> register(@Valid @RequestBody RegisterFaceIdForm form, BindingResult bindingResult) {
         Account account = accountRepository.findById(getCurrentUser()).orElse(null);
         if (account == null) {
             return makeErrorResponse(ErrorCode.ACCOUNT_ERROR_NOT_FOUND, "Account not found");
@@ -56,7 +56,7 @@ public class FaceIdController extends ABasicController {
         ImagePayloadDto dto = new ImagePayloadDto();
         dto.setImageData(form.getImageData());
         dto.setUserId(account.getUsername());
-        ApiMessageDto<String> res = feignFaceIdService.registerWebCam(faceIdApiKey, dto);
+        ApiMessageDto<Object> res = feignFaceIdService.registerWebCam(faceIdApiKey, dto);
         if (!res.getResult()) {
             throw new BadRequestException(res.getMessage());
         }

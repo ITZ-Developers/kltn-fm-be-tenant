@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 @FeignClient(name = "faceid-svr", url = "${face-id.url}", configuration = CustomFeignConfig.class)
 public interface FeignFaceIdService {
     @PostMapping(value = "/register_webcam")
-    ApiMessageDto<String> registerWebCam(@RequestHeader(FeignConstant.HEADER_X_API_KEY) String apiKey, @RequestBody ImagePayloadDto form);
+    ApiMessageDto<Object> registerWebCam(@RequestHeader(FeignConstant.HEADER_X_API_KEY) String apiKey, @RequestBody ImagePayloadDto form);
 
     @PostMapping(value = "/verify_webcam")
     ApiMessageDto<VerifyFaceIdDto> verifyWebCam(@RequestHeader(FeignConstant.HEADER_X_API_KEY) String apiKey, @RequestBody ImagePayloadDto form);
