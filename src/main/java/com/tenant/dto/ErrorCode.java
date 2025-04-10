@@ -10,6 +10,7 @@ public class ErrorCode {
     public static final String GENERAL_ERROR_INVALID_API_KEY = "ERROR-INVALID-API-KEY";
     public static final String GENERAL_ERROR_QR_CODE_EXPIRED = "GENERAL_ERROR_QR_CODE_EXPIRED";
     public static final String GENERAL_ERROR_INVALID_GRANT_TYPE = "GENERAL_ERROR_INVALID_GRANT_TYPE";
+    public static final String GENERAL_ERROR_INVALID_FACE_ID = "GENERAL_ERROR_INVALID_FACE_ID";
 
     /**
      * Starting error code Account

@@ -14,6 +14,7 @@ import com.tenant.multitenancy.feign.FeignFaceIdService;
 import com.tenant.storage.tenant.model.Account;
 import com.tenant.storage.tenant.repository.AccountRepository;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
@@ -76,7 +77,14 @@ public class FaceIdController extends ABasicController {
         }
         ImagePayloadDto dto = new ImagePayloadDto();
         dto.setImageData(form.getImageData());
-        return feignFaceIdService.verifyWebCam(faceIdApiKey, dto);
+        ApiMessageDto<VerifyFaceIdDto> res = feignFaceIdService.verifyWebCam(faceIdApiKey, dto);
+        if (!res.getResult()) {
+            throw new BadRequestException(res.getMessage());
+        }
+        if (StringUtils.isNotBlank(res.getData().getUserId()) && !res.getData().getUserId().equals(account.getUsername())) {
+            throw new BadRequestException(ErrorCode.GENERAL_ERROR_INVALID_FACE_ID, "Face not match");
+        }
+        return res;
     }
 
     @PostMapping(value = "/delete", produces = MediaType.APPLICATION_JSON_VALUE)
