@@ -1,5 +1,6 @@
 package com.tenant.storage.tenant.model.criteria;
 
+import com.tenant.constant.FinanceConstant;
 import com.tenant.storage.tenant.model.Account;
 import com.tenant.storage.tenant.model.ChatRoom;
 import com.tenant.storage.tenant.model.Message;
@@ -24,7 +25,7 @@ public class MessageCriteria {
     private String parent;
     private Integer status;
     private Long chatRoomId;
-
+    private Integer isPaged = FinanceConstant.IS_PAGED_TRUE;
 
     public Specification<Message> getCriteria() {
         return (root, query, cb) -> {

@@ -6,26 +6,15 @@ import com.tenant.storage.tenant.model.ChatRoomMember;
 import org.mapstruct.*;
 import java.util.List;
 
-@Mapper(componentModel = "spring", uses = {ChatRoomMapper.class, AccountMapper.class},
+@Mapper(componentModel = "spring", uses = {ChatRoomMapper.class, AccountMapper.class, MessageMapper.class},
         unmappedTargetPolicy = ReportingPolicy.IGNORE,
         nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
 public interface ChatRoomMemberMapper {
-    @Mapping(source = "nickName", target = "nickName")
-    @BeanMapping(ignoreByDefault = true)
-    ChatRoomMember fromCreateChatRoomMemberFormToEntity(CreateChatRoomMemberForm createChatRoomMemberForm);
-
-    @Mapping(source = "nickName", target = "nickName")
-    @Mapping(source = "lastReadMessage", target = "lastReadMessage")
-    @BeanMapping(ignoreByDefault = true)
-    void fromUpdateChatRoomMemberFormToEntity(UpdateChatRoomMemberForm updateChatRoomMemberForm, @MappingTarget ChatRoomMember chatroommember);
 
     @Mapping(source = "id", target = "id")
-    @Mapping(source = "nickName", target = "nickName")
-    @Mapping(source = "room", target = "room", qualifiedByName = "fromEntityToChatRoomDto")
-    @Mapping(source = "member", target = "member", qualifiedByName = "fromEntityToAccountDtoForNotificationGroup")
-    @Mapping(source = "lastReadMessage", target = "lastReadMessage")
-    @Mapping(source = "status", target = "status")
-    @Mapping(source = "createdDate", target = "createdDate")
+    @Mapping(source = "chatRoom", target = "room", qualifiedByName = "fromEntityToChatRoomDto")
+    @Mapping(source = "member", target = "member", qualifiedByName = "fromEntityToAccountDtoAutoComplete")
+    @Mapping(source = "lastReadMessage", target = "lastReadMessage", qualifiedByName = "fromEntityToMessageDto")
     @BeanMapping(ignoreByDefault = true)
     @Named("fromEntityToChatRoomMemberDto")
     ChatRoomMemberDto fromEntityToChatRoomMemberDto(ChatRoomMember chatroommember);
@@ -34,7 +23,6 @@ public interface ChatRoomMemberMapper {
     List<ChatRoomMemberDto> fromEntityListToChatRoomMemberDtoList(List<ChatRoomMember> chatroommemberList);
 
     @Mapping(source = "id", target = "id")
-    @Mapping(source = "nickName", target = "nickName")
     @BeanMapping(ignoreByDefault = true)
     @Named("fromEntityToChatRoomMemberDtoAutoComplete")
     ChatRoomMemberDto fromEntityToChatRoomMemberDtoAutoComplete(ChatRoomMember chatroommember);

@@ -227,14 +227,24 @@ public class ErrorCode {
     /**
      * Starting error code Chatroom
      */
-    public static final String CHATROOM_ERROR_NOT_FOUND = "ERROR-CHATROOM-0000";
-    public static final String CHATROOM_ERROR_NO_OWNER = "ERROR-CHATROOM-0001";
-
+    public static final String CHAT_ROOM_ERROR_NOT_FOUND = "ERROR-CHAT-ROOM-0000";
+    public static final String CHAT_ROOM_ERROR_NO_OWNER = "ERROR-CHAT-ROOM-0001";
+    public static final String CHAT_ROOM_ERROR_DIRECT_MESSAGE_NOT_UPDATE = "ERROR-CHAT-ROOM-MEMBER-0002";
+    public static final String CHAT_ROOM_ERROR_UNABLE_INVITE_NEW_MEMBERS = "ERROR-CHAT-ROOM-MEMBER-0004";
+    public static final String CHAT_ROOM_ERROR_NOT_KIND_GROUP = "ERROR-CHAT-ROOM-0005";
     /**
      * Starting error code Chat Room Member
      */
     public static final String CHAT_ROOM_MEMBER_ERROR_NOT_FOUND = "ERROR-CHAT-ROOM-MEMBER-0000";
     public static final String CHAT_ROOM_MEMBER_ERROR_NO_JOIN = "ERROR-CHAT-ROOM-MEMBER-0001";
+    public static final String CHAT_ROOM_MEMBER_ERROR_IS_NOT_OWNER_AND_NOT_ALLOW_UPDATE = "ERROR-CHAT-ROOM-MEMBER-0002";
+    public static final String CHAT_ROOM_MEMBER_ERROR_KIND_GROUP_HAS_MORE_THAN_3 = "ERROR-CHAT-ROOM-MEMBER-0003";
+    public static final String CHAT_ROOM_MEMBER_ERROR_NEW_CHAT_ROOM_MEMBERS_EMPTY = "ERROR-CHAT-ROOM-MEMBER-0004";
+    public static final String CHAT_ROOM_MEMBER_IS_OWNER = "ERROR-CHAT-ROOM-MEMBER-0005";
+    public static final String CHAT_ROOM_MEMBER_ERROR_EXISTED_IN_CHAT_ROOM = "ERROR-CHAT-ROOM-MEMBER-0006";
+    public static final String CHAT_ROOM_MEMBER_ERROR_IS_NOT_SEND_MESSAGES = "ERROR-CHAT-ROOM-MEMBER-0007";
+
+
     /**
      * Starting error code Message
      */

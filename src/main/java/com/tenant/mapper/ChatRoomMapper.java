@@ -15,13 +15,11 @@ import java.util.List;
 public interface ChatRoomMapper {
     @Mapping(source = "name", target = "name")
     @Mapping(source = "avatar", target = "avatar")
-    @Mapping(source = "kind", target = "kind")
     @BeanMapping(ignoreByDefault = true)
     ChatRoom fromCreateChatRoomFormToEntity(CreateChatRoomForm createChatRoomForm);
 
     @Mapping(source = "name", target = "name")
     @Mapping(source = "avatar", target = "avatar")
-    @Mapping(source = "kind", target = "kind")
     @BeanMapping(ignoreByDefault = true)
     void fromUpdateChatRoomFormToEntity(UpdateChatRoomForm updateChatRoomForm, @MappingTarget ChatRoom chatroom);
 
@@ -29,7 +27,10 @@ public interface ChatRoomMapper {
     @Mapping(source = "name", target = "name")
     @Mapping(source = "avatar", target = "avatar")
     @Mapping(source = "kind", target = "kind")
-    @Mapping(source = "owner", target = "owner", qualifiedByName = "fromEntityToAccountDtoForNotificationGroup")
+    @Mapping(source = "owner", target = "owner", qualifiedByName = "fromEntityToAccountDtoAutoComplete")
+    @Mapping(target = "totalMembers", ignore = true)
+    @Mapping(target = "lastMessage", ignore = true)
+    @Mapping(target = "totalUnreadMessages", ignore = true)
     @Mapping(source = "status", target = "status")
     @Mapping(source = "createdDate", target = "createdDate")
     @BeanMapping(ignoreByDefault = true)

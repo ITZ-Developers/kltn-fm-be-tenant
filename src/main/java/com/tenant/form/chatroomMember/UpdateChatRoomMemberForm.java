@@ -9,10 +9,7 @@ public class UpdateChatRoomMemberForm {
     @NotNull(message = "id cannot be null")
     @ApiModelProperty(required = true)
     private Long id;
-    @NotBlank(message = "nickName cannot be blank")
+    @NotBlank(message = "lastReadMessageId cannot be blank")
     @ApiModelProperty(required = true)
-    private String nickName;
-    @NotBlank(message = "lastReadMessage cannot be blank")
-    @ApiModelProperty(required = true)
-    private String lastReadMessage;
+    private Long lastReadMessageId;
 }
