@@ -24,8 +24,12 @@ public class ABasicController {
     private ChatRoomRepository chatRoomRepository;
 
     public long getCurrentUser() {
-        FinanceJwt financeJwt = userService.getAddInfoFromToken();
-        return financeJwt.getAccountId();
+        try {
+            FinanceJwt financeJwt = userService.getAddInfoFromToken();
+            return financeJwt.getAccountId();
+        } catch (Exception e) {
+            return -1000L;
+        }
     }
 
     public String getCurrentGrantType() {
