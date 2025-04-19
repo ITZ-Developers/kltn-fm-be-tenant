@@ -4,7 +4,9 @@ import com.tenant.dto.account.KeyWrapperDto;
 import com.tenant.dto.message.MessageDto;
 import com.tenant.form.message.CreateMessageForm;
 import com.tenant.form.message.UpdateMessageForm;
+import com.tenant.form.transactionGroup.UpdateTransactionGroupForm;
 import com.tenant.storage.tenant.model.Message;
+import com.tenant.storage.tenant.model.TransactionGroup;
 import org.mapstruct.*;
 
 import java.util.List;
@@ -46,4 +48,15 @@ public interface MessageMapper extends EncryptDecryptMapper {
     @IterableMapping(elementTargetType = MessageDto.class, qualifiedByName = "fromEntityToMessageShortDto")
     @Named("fromEntityToMessageShortDtoList")
     List<MessageDto> fromEntityToMessageShortDtoList(List<Message> messageList, @Context KeyWrapperDto keyWrapper);
+
+    @Mapping(target = "content", expression = "java(encrypt(secretKey, form.getContent()))")
+    @Mapping(target = "document", expression = "java(encrypt(secretKey, form.getDocument()))")
+    @BeanMapping(ignoreByDefault = true)
+    Message fromCreateMessageFormToEncryptEntity(CreateMessageForm form,  @Context String secretKey);
+
+    @Mapping(target = "content", expression = "java(encrypt(secretKey, form.getContent()))")
+    @Mapping(target = "document", expression = "java(encrypt(secretKey, form.getDocument()))")
+    @BeanMapping(ignoreByDefault = true)
+    void fromUpdateMessageFormToEncryptEntity(UpdateMessageForm form, @MappingTarget Message message, @Context String secretKey);
+
 }

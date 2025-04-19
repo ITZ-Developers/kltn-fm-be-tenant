@@ -105,16 +105,7 @@ public class MessageController extends ABasicController {
         if (!StringUtils.isNotBlank(form.getContent()) && !StringUtils.isNotBlank(form.getDocument())) {
             throw new BadRequestException("Required content or document");
         }
-        Message message = new Message();
-        String userSecretKey = keyService.getUserSecretKey();
-        if (StringUtils.isNotBlank(form.getDocument())) {
-            String messageDocument = AESUtils.decrypt(userSecretKey, form.getDocument(), FinanceConstant.AES_ZIP_ENABLE);
-            message.setDocument(AESUtils.encrypt(keyService.getFinanceSecretKey(), messageDocument, FinanceConstant.AES_ZIP_ENABLE));
-        }
-        if (StringUtils.isNotBlank(form.getContent())) {
-            String messageContent = AESUtils.decrypt(userSecretKey, form.getContent(), FinanceConstant.AES_ZIP_ENABLE);
-            message.setContent(AESUtils.encrypt(keyService.getFinanceSecretKey(), messageContent, FinanceConstant.AES_ZIP_ENABLE));
-        }
+        Message message = messageMapper.fromCreateMessageFormToEncryptEntity(form, keyService.getFinanceSecretKey());
         Long currentId = getCurrentUser();
         Account sender = accountRepository.findById(currentId).orElse(null);
         if (sender == null) {
@@ -155,15 +146,7 @@ public class MessageController extends ABasicController {
         if (message == null) {
             throw new BadRequestException(ErrorCode.MESSAGE_ERROR_NOT_FOUND, "Not found message");
         }
-        String userSecretKey = keyService.getUserSecretKey();
-        if (StringUtils.isNotBlank(form.getDocument())) {
-            String messageDocument = AESUtils.decrypt(userSecretKey, form.getDocument(), FinanceConstant.AES_ZIP_ENABLE);
-            message.setDocument(AESUtils.encrypt(keyService.getFinanceSecretKey(), messageDocument, FinanceConstant.AES_ZIP_ENABLE));
-        }
-        if (StringUtils.isNotBlank(form.getContent())) {
-            String messageContent = AESUtils.decrypt(userSecretKey, form.getContent(), FinanceConstant.AES_ZIP_ENABLE);
-            message.setContent(AESUtils.encrypt(keyService.getFinanceSecretKey(), messageContent, FinanceConstant.AES_ZIP_ENABLE));
-        }
+        messageMapper.fromUpdateMessageFormToEncryptEntity(form, message, keyService.getFinanceSecretKey());
         Long currentId = getCurrentUser();
         ChatRoom chatroom = new ChatRoom();
         boolean isMemberOfChatRoom = checkIsMemberOfChatRoom(currentId, message.getChatRoom().getId());
