@@ -1,5 +1,6 @@
 package com.tenant.storage.tenant.model.criteria;
 
+import com.tenant.constant.FinanceConstant;
 import com.tenant.storage.tenant.model.Account;
 import com.tenant.storage.tenant.model.ChatRoom;
 import com.tenant.storage.tenant.model.ChatRoomMember;
@@ -15,11 +16,10 @@ import java.util.List;
 @Data
 public class ChatRoomMemberCriteria {
     private Long id;
-    private String nickName;
     private Long roomId;
     private Long memberId;
-    private String lastReadMessage;
     private Integer status;
+    private Integer isPaged = FinanceConstant.IS_PAGED_TRUE; // 0: false, 1: true
 
     public Specification<ChatRoomMember> getCriteria() {
         return (root, query, cb) -> {
@@ -27,19 +27,13 @@ public class ChatRoomMemberCriteria {
             if (getId() != null) {
                 predicates.add(cb.equal(root.get("id"), getId()));
             }
-            if (StringUtils.isNotBlank(getNickName())) {
-                predicates.add(cb.like(cb.lower(root.get("nickName")), "%" + getNickName().toLowerCase() + "%"));
-            }
             if (getRoomId() != null) {
-                Join<ChatRoomMember, ChatRoom> join = root.join("room", JoinType.INNER);
+                Join<ChatRoomMember, ChatRoom> join = root.join("chatRoom", JoinType.INNER);
                 predicates.add(cb.equal(join.get("id"), getRoomId()));
             }
             if (getMemberId() != null) {
                 Join<ChatRoomMember, Account> join = root.join("member", JoinType.INNER);
                 predicates.add(cb.equal(join.get("id"), getMemberId()));
-            }
-            if (StringUtils.isNotBlank(getLastReadMessage())) {
-                predicates.add(cb.like(cb.lower(root.get("lastReadMessage")), "%" + getLastReadMessage().toLowerCase() + "%"));
             }
             if (getStatus() != null) {
                 predicates.add(cb.equal(root.get("status"), getStatus()));

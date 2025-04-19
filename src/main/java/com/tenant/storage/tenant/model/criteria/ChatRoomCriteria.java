@@ -1,7 +1,9 @@
 package com.tenant.storage.tenant.model.criteria;
 
+import com.tenant.constant.FinanceConstant;
 import com.tenant.storage.tenant.model.Account;
 import com.tenant.storage.tenant.model.ChatRoom;
+import com.tenant.storage.tenant.model.ChatRoomMember;
 import lombok.Data;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.jpa.domain.Specification;
@@ -11,7 +13,7 @@ import javax.persistence.criteria.JoinType;
 import javax.persistence.criteria.Predicate;
 import java.util.ArrayList;
 import java.util.List;
-
+import com.tenant.storage.tenant.model.*;
 @Data
 public class ChatRoomCriteria {
     private Long id;
@@ -20,7 +22,9 @@ public class ChatRoomCriteria {
     private Integer kind;
     private Long ownerId;
     private Integer status;
-
+    private Integer isPaged = FinanceConstant.IS_PAGED_TRUE;
+    private Long memberId;
+    private Boolean shouldSortByLastMessage = false;
     public Specification<ChatRoom> getCriteria() {
         return (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
@@ -40,8 +44,20 @@ public class ChatRoomCriteria {
                 Join<ChatRoom, Account> join = root.join("owner", JoinType.INNER);
                 predicates.add(cb.equal(join.get("id"), getOwnerId()));
             }
+            if (getMemberId() != null) {
+                Join<ChatRoom, ChatRoomMember> joinMember = root.join("chatRoomMembers", JoinType.INNER);
+                predicates.add(cb.equal(joinMember.get("member").get("id"), getMemberId()));
+            }
             if (getStatus() != null) {
                 predicates.add(cb.equal(root.get("status"), getStatus()));
+            }
+            if (Boolean.TRUE.equals(shouldSortByLastMessage)) {
+                Join<ChatRoom, Message> messageJoin = root.join("messages", JoinType.LEFT);
+                query.orderBy(cb.desc(cb.coalesce(
+                        cb.max(messageJoin.get("createdDate")),
+                        root.get("createdDate")
+                )));
+                query.groupBy(root.get("id"));
             }
             return cb.and(predicates.toArray(new Predicate[0]));
         };

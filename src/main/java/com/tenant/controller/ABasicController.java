@@ -4,12 +4,15 @@ import com.tenant.constant.SecurityConstant;
 import com.tenant.dto.ApiMessageDto;
 import com.tenant.jwt.FinanceJwt;
 import com.tenant.service.impl.UserServiceImpl;
+import com.tenant.storage.Auditable;
 import com.tenant.storage.tenant.model.ChatRoom;
 import com.tenant.storage.tenant.model.ChatRoomMember;
+import com.tenant.storage.tenant.model.Message;
 import com.tenant.storage.tenant.repository.ChatRoomMemberRepository;
 import com.tenant.storage.tenant.repository.ChatRoomRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -24,8 +27,12 @@ public class ABasicController {
     private ChatRoomRepository chatRoomRepository;
 
     public long getCurrentUser() {
-        FinanceJwt financeJwt = userService.getAddInfoFromToken();
-        return financeJwt.getAccountId();
+        try {
+            FinanceJwt financeJwt = userService.getAddInfoFromToken();
+            return financeJwt.getAccountId();
+        } catch (Exception e) {
+            return -1000L;
+        }
     }
 
     public String getCurrentGrantType() {
@@ -66,17 +73,14 @@ public class ABasicController {
     }
 
     public boolean checkIsMemberOfChatRoom(Long accountId, Long chatroomId) {
-        List<ChatRoomMember> chatRoomMembers = chatRoomMemberRepository.findAllByChatRoomId(chatroomId);
-        if (!chatRoomMembers.isEmpty()) {
-            return chatRoomMembers.stream()
-                    .anyMatch(member -> member.getMember().getId().equals(accountId));
-        }
-        return false;
+        return chatRoomMemberRepository.existsByChatRoomIdAndMemberId(chatroomId, accountId);
     }
     public boolean checkOwnerChatRoom(Long accountId, Long chatroomId) {
-        Optional<ChatRoom> chatRoomOptional = chatRoomRepository.findById(chatroomId);
-        return chatRoomOptional
-                .map(chatRoom -> chatRoom.getOwner() != null && chatRoom.getOwner().getId().equals(accountId))
-                .orElse(false);
+        return chatRoomRepository.existsByIdAndOwnerId(chatroomId, accountId);
+    }
+    public Message getLastMessage(ChatRoom chatroom){
+        return chatroom.getMessages().stream()
+                .max(Comparator.comparing(Auditable::getCreatedDate))
+                .orElse(null);
     }
 }

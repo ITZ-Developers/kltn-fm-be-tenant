@@ -42,4 +42,5 @@ public class Account extends Auditable<String> {
     @ManyToOne
     @JoinColumn(name = "department_id")
     private Department department;
+    private Boolean isFaceIdRegistered = false;
 }

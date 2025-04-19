@@ -7,10 +7,16 @@ public class FinanceConstant {
     public static final String DATE_FORMAT = "dd/MM/yyyy";
     public static final String DATE_TIME_FORMAT = "dd/MM/yyyy HH:mm:ss";
 
+    public static final String CHAT_ROOM_SETTING_SAMPLE_DATA = "{\"member_permissions\":{\"allow_send_messages\":true,\"allow_update_chat_room\":true,\"allow_invite_members\":true}}";
+    public static final String CHAT_ROOM_SETTING_ALLOW_UPDATE = "allow_update_chat_room";
+    public static final String CHAT_ROOM_SETTING_ALLOW_SEND_MESSAGES = "allow_send_messages";
+    public static final String CHAT_ROOM_SETTING_ALLOW_INVITE_MEMBERS = "allow_invite_members";
+
     public static final String CMD_DELETE_NOTIFICATION = "CMD_DELETE_NOTIFICATION";
     public static final String CMD_CREATE_PAYMENT_PERIOD = "CMD_CREATE_PAYMENT_PERIOD";
     public static final String CMD_SCHEDULE_SERVICE = "CMD_SCHEDULE_SERVICE";
     public static final String CMD_LOCK_DEVICE = "CMD_LOCK_DEVICE";
+    public static final String CMD_LOGIN_QR_CODE = "CMD_LOGIN_QR_CODE";
 
     public static final String NAME_PATTERN = "^[\\p{L} ]+$";
     public static final String USERNAME_PATTERN = "^[a-z0-9_]+$";
@@ -103,8 +109,13 @@ public class FinanceConstant {
 
     public static final Integer CHATROOM_KIND_GROUP = 1;
     public static final Integer CHATROOM_KIND_DIRECT_MESSAGE = 2;
+    public static final Integer MESSAGE_REACTION_KIND_LIKE = 1;
+    public static final Integer MESSAGE_REACTION_KIND_HEART = 2;
+    public static final Integer MESSAGE_REACTION_KIND_CRY = 3;
+    public static final Integer MESSAGE_REACTION_KIND_JOY = 4;
+    public static final Integer MESSAGE_REACTION_KIND_LAUGH = 5;
 
-    private FinanceConstant(){
+    private FinanceConstant() {
         throw new IllegalStateException("Utility class");
     }
 }

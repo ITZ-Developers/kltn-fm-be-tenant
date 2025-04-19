@@ -14,7 +14,8 @@ import javax.persistence.*;
 @EntityListeners(AuditingEntityListener.class)
 @Getter
 @Setter
-public class Message extends Auditable<String> {
+public class
+Message extends Auditable<String> {
     @Id
     @GenericGenerator(name = "idGenerator", strategy = "com.tenant.service.id.IdGenerator")
     @GeneratedValue(generator = "idGenerator")
@@ -29,7 +30,13 @@ public class Message extends Auditable<String> {
     private String content;
     @Column(columnDefinition = "TEXT")
     private String document;
-    private String parent;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "parent_id")
+    private Message parent;
+    private Boolean isUpdate = false;
+    private Boolean isDeleted = false;
     @OneToMany(mappedBy = "message", fetch = FetchType.LAZY)
     private List<MessageReaction> messageReactions = new ArrayList<>();
+    @OneToMany(mappedBy = "lastReadMessage", fetch = FetchType.LAZY)
+    List<ChatRoomMember> seenMember = new ArrayList<>();
 }

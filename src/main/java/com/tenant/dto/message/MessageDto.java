@@ -9,5 +9,5 @@ public class MessageDto extends ABasicAdminDto {
     private AccountDto sender;
     private String content;
     private String document;
-    private String parent;
+    private MessageDto parent;
 }

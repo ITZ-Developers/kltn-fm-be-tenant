@@ -39,4 +39,5 @@ public class AccountDto {
     private Integer status;
     @ApiModelProperty(name = "department")
     private DepartmentDto department;
+    private Boolean isFaceIdRegistered;
 }

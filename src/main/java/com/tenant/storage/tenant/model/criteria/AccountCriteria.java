@@ -42,6 +42,7 @@ public class AccountCriteria implements Serializable{
     private Long ignoreOrganizationId;
     private Long ignoreServiceId;
     private Long ignoreServiceGroupId;
+    private Long ignoreChatroomId;
 
     public Specification<Account> getCriteria() {
         return new Specification<Account>() {
@@ -224,6 +225,13 @@ public class AccountCriteria implements Serializable{
                     Root<ServicePermission> subRoot = subquery.from(ServicePermission.class);
                     subquery.select(subRoot.get("account").get("id"))
                             .where(cb.equal(subRoot.get("serviceGroup").get("id"), getIgnoreServiceGroupId()));
+                    predicates.add(cb.not(root.get("id").in(subquery)));
+                }
+                if (getIgnoreChatroomId() != null) {
+                    Subquery<Long> subquery = query.subquery(Long.class);
+                    Root<ChatRoomMember> subRoot = subquery.from(ChatRoomMember.class);
+                    subquery.select(subRoot.get("account").get("id"))
+                            .where(cb.equal(subRoot.get("chatroom").get("id"), getIgnoreChatroomId()));
                     predicates.add(cb.not(root.get("id").in(subquery)));
                 }
                 if(getSortDate() != null){
