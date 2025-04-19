@@ -28,8 +28,6 @@ public interface ChatRoomMapper {
     @Mapping(source = "avatar", target = "avatar")
     @Mapping(source = "kind", target = "kind")
     @Mapping(source = "owner", target = "owner", qualifiedByName = "fromEntityToAccountDtoAutoComplete")
-    @Mapping(target = "totalMembers", ignore = true)
-    @Mapping(target = "lastMessage", ignore = true)
     @Mapping(target = "totalUnreadMessages", ignore = true)
     @Mapping(source = "status", target = "status")
     @Mapping(source = "createdDate", target = "createdDate")

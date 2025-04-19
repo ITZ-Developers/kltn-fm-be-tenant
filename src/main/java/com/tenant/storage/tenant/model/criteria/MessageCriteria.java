@@ -4,6 +4,8 @@ import com.tenant.constant.FinanceConstant;
 import com.tenant.storage.tenant.model.Account;
 import com.tenant.storage.tenant.model.ChatRoom;
 import com.tenant.storage.tenant.model.Message;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
@@ -17,6 +19,7 @@ import java.util.List;
 
 @Getter
 @Setter
+@ApiModel
 public class MessageCriteria {
     private Long id;
     private Long senderId;
@@ -24,6 +27,7 @@ public class MessageCriteria {
     private String document;
     private String parent;
     private Integer status;
+    @ApiModelProperty(required = true)
     private Long chatRoomId;
     private Integer isPaged = FinanceConstant.IS_PAGED_TRUE;
 

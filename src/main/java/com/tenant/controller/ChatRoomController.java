@@ -11,6 +11,7 @@ import com.tenant.form.chatroom.CreateChatRoomForm;
 import com.tenant.form.chatroom.UpdateChatRoomForm;
 import com.tenant.mapper.ChatRoomMapper;
 import com.tenant.mapper.MessageMapper;
+import com.tenant.service.KeyService;
 import com.tenant.storage.tenant.model.*;
 import com.tenant.storage.tenant.model.Account;
 import com.tenant.storage.tenant.model.ChatRoom;
@@ -52,6 +53,8 @@ public class ChatRoomController extends ABasicController {
     private MessageReactionRepository messageReactionRepository;
     @Autowired
     private MessageMapper messageMapper;
+    @Autowired
+    private KeyService keyService;
 
     @GetMapping(value = "/get/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ApiMessageDto<ChatRoomDto> get(@PathVariable("id") Long id) {
@@ -105,7 +108,7 @@ public class ChatRoomController extends ABasicController {
             }
             Message lastMessage = lastMessageMap.get(chatRoom.getId());
             if (lastMessage != null) {
-                dto.setLastMessage(messageMapper.fromEntityToMessageDto(lastMessage));
+                dto.setLastMessage(messageMapper.fromEntityToMessageDto(lastMessage, keyService.getFinanceKeyWrapper()));
             }
             dto.setTotalUnreadMessages(unreadCountMap.getOrDefault(chatRoom.getId(), 0L));
             return dto;
@@ -132,7 +135,6 @@ public class ChatRoomController extends ABasicController {
     }
 
     @PostMapping(value = "/create-group", produces = MediaType.APPLICATION_JSON_VALUE)
-    @PreAuthorize("hasRole('CHA_I')")
     public ApiMessageDto<String> createGroup(@Valid @RequestBody CreateChatRoomForm form, BindingResult bindingResult) {
         ChatRoom chatroom = chatRoomMapper.fromCreateChatRoomFormToEntity(form);
         Account owner = accountRepository.findById(getCurrentUser()).orElse(null);
@@ -165,7 +167,6 @@ public class ChatRoomController extends ABasicController {
     }
 
     @PostMapping(value = "/create-direct-message", produces = MediaType.APPLICATION_JSON_VALUE)
-    @PreAuthorize("hasRole('CHA_I')")
     public ApiMessageDto<ChatRoomDto> createDirectMessage(@Valid @RequestBody CreateChatRoomDirectForm form, BindingResult bindingResult) {
         ChatRoom chatroom = new ChatRoom();
         Account owner = accountRepository.findById(getCurrentUser()).orElse(null);
@@ -198,7 +199,6 @@ public class ChatRoomController extends ABasicController {
     }
 
     @PutMapping(value = "/update", produces = MediaType.APPLICATION_JSON_VALUE)
-    @PreAuthorize("hasRole('CHA_I')")
     public ApiMessageDto<String> update(@Valid @RequestBody UpdateChatRoomForm form, BindingResult bindingResult) {
         ChatRoom chatroom = chatroomRepository.findById(form.getId()).orElse(null);
         if (chatroom == null) {
@@ -223,7 +223,6 @@ public class ChatRoomController extends ABasicController {
     }
 
     @DeleteMapping(value = "/delete/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    @PreAuthorize("hasRole('CHA_I')")
     public ApiMessageDto<String> delete(@PathVariable("id") Long id) {
         ChatRoom chatroom = chatroomRepository.findById(id).orElse(null);
         if (chatroom == null) {

@@ -1,6 +1,7 @@
 package com.tenant.controller;
 
 import com.tenant.constant.FinanceConstant;
+import com.tenant.service.KeyService;
 import com.tenant.service.MessageService;
 import com.tenant.storage.tenant.model.*;
 import com.tenant.dto.ApiMessageDto;
@@ -49,6 +50,8 @@ public class ChatRoomMemberController extends ABasicController {
     private AccountRepository accountRepository;
     @Autowired
     private MessageService messageService;
+    @Autowired
+    private KeyService keyService;
 
     @GetMapping(value = "/list", produces = MediaType.APPLICATION_JSON_VALUE)
     public ApiMessageDto<ResponseListDto<List<ChatRoomMemberDto>>> list(ChatRoomMemberCriteria chatRoomMemberCriteria, Pageable pageable) {
@@ -57,7 +60,7 @@ public class ChatRoomMemberController extends ABasicController {
         }
         Page<ChatRoomMember> listChatRoomMember = chatRoomMemberRepository.findAll(chatRoomMemberCriteria.getCriteria(), pageable);
         ResponseListDto<List<ChatRoomMemberDto>> responseListObj = new ResponseListDto<>();
-        responseListObj.setContent(chatRoomMemberMapper.fromEntityListToChatRoomMemberDtoList(listChatRoomMember.getContent()));
+        responseListObj.setContent(chatRoomMemberMapper.fromEntityListToChatRoomMemberDtoList(listChatRoomMember.getContent(), keyService.getFinanceKeyWrapper()));
         responseListObj.setTotalPages(listChatRoomMember.getTotalPages());
         responseListObj.setTotalElements(listChatRoomMember.getTotalElements());
         return makeSuccessResponse(responseListObj, "Get list chat room member success");

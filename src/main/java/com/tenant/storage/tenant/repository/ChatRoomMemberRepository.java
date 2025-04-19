@@ -41,4 +41,5 @@ public interface ChatRoomMemberRepository extends JpaRepository<ChatRoomMember, 
             @Param("chatRoomId") Long chatRoomId
     );
 
+    ChatRoomMember findFirstByChatRoomIdAndMemberId(Long chatRoomId, Long memberId);
 }

@@ -13,6 +13,7 @@ import com.tenant.mapper.MessageMapper;
 import com.tenant.service.KeyService;
 import com.tenant.storage.tenant.model.Account;
 import com.tenant.storage.tenant.model.ChatRoom;
+import com.tenant.storage.tenant.model.ChatRoomMember;
 import com.tenant.storage.tenant.model.Message;
 import com.tenant.storage.tenant.model.criteria.MessageCriteria;
 import com.tenant.storage.tenant.repository.*;
@@ -24,6 +25,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -56,22 +58,45 @@ public class MessageController extends ABasicController {
     @GetMapping(value = "/get/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ApiMessageDto<MessageDto> get(@PathVariable("id") Long id) {
         Message message = messageRepository.findById(id).orElse(null);
+        Long currentId = getCurrentUser();
+        ChatRoom chatRoom = message.getChatRoom();
+        boolean isMemberOfChatRoom = checkIsMemberOfChatRoom(currentId, chatRoom.getId());
+        if (!isMemberOfChatRoom) {
+            throw new BadRequestException(ErrorCode.CHAT_ROOM_MEMBER_ERROR_NO_JOIN, "Account no in this room");
+        }
         if (message == null) {
             throw new BadRequestException(ErrorCode.MESSAGE_ERROR_NOT_FOUND, "Not found message");
         }
-        return makeSuccessResponse(messageMapper.fromEntityToMessageDto(message), "Get message success");
+        MessageDto dto = messageMapper.fromEntityToMessageDto(message, keyService.getFinanceKeyWrapper());
+        return makeSuccessResponse(dto, "Get message success");
     }
 
     @GetMapping(value = "/list", produces = MediaType.APPLICATION_JSON_VALUE)
     public ApiMessageDto<ResponseListDto<List<MessageDto>>> list(MessageCriteria messageCriteria, Pageable pageable) {
         if (messageCriteria.getIsPaged().equals(FinanceConstant.IS_PAGED_FALSE)) {
-            pageable = PageRequest.of(0, Integer.MAX_VALUE);
+            pageable = PageRequest.of(0, pageable.getPageSize(),
+                    Sort.by(Sort.Order.desc("createdDate")));
+        } else if (pageable.getSort().isUnsorted()) {
+            pageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by(Sort.Order.desc("createdDate")));
+        }
+        if (messageCriteria.getChatRoomId() != null) {
+            throw new BadRequestException("Required chatroomId");
+        }
+        Long currentId = getCurrentUser();
+        boolean isMemberOfChatRoom = checkIsMemberOfChatRoom(currentId, messageCriteria.getChatRoomId());
+        if (!isMemberOfChatRoom) {
+            throw new BadRequestException(ErrorCode.CHAT_ROOM_MEMBER_ERROR_NO_JOIN, "Account no in this room");
         }
         Page<Message> listMessage = messageRepository.findAll(messageCriteria.getCriteria(), pageable);
         ResponseListDto<List<MessageDto>> responseListObj = new ResponseListDto<>();
-        responseListObj.setContent(messageMapper.fromEntityListToMessageDtoList(listMessage.getContent()));
+        responseListObj.setContent(messageMapper.fromEntityListToMessageDtoList(listMessage.getContent(), keyService.getFinanceKeyWrapper()));
         responseListObj.setTotalPages(listMessage.getTotalPages());
         responseListObj.setTotalElements(listMessage.getTotalElements());
+        //Update last message for member
+        ChatRoomMember chatRoomMember = chatRoomMemberRepository.findFirstByChatRoomIdAndMemberId(messageCriteria.getChatRoomId(), currentId);
+        Message lastMessage = messageRepository.findLastMessageByChatRoomId(messageCriteria.getChatRoomId());
+        chatRoomMember.setLastReadMessage(lastMessage);
+        chatRoomMemberRepository.save(chatRoomMember);
         return makeSuccessResponse(responseListObj, "Get list message success");
     }
 
