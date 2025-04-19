@@ -38,7 +38,7 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long>, JpaSp
     List<ChatRoomUnreadCountInterface> countUnreadMessages(@Param("chatRoomIds") List<Long> chatRoomIds,
                                                            @Param("userId") Long userId);
 
-    @Query("SELECT crm.chatRoom.id as chatRoomId, a.fullName as fullName, a.avatar as avatar " +
+    @Query("SELECT crm.chatRoom.id as chatRoomId, a.fullName as fullName, a.avatarPath as avatar " +
             "FROM ChatRoomMember crm JOIN crm.member a " +
             "WHERE crm.chatRoom.id IN :chatRoomIds " +
             "AND crm.member.id != :currentUserId " +
