@@ -6,21 +6,32 @@ import com.tenant.form.message.CreateMessageForm;
 import com.tenant.form.message.UpdateMessageForm;
 import com.tenant.form.transactionGroup.UpdateTransactionGroupForm;
 import com.tenant.storage.tenant.model.Message;
+import com.tenant.storage.tenant.model.MessageReaction;
 import com.tenant.storage.tenant.model.TransactionGroup;
 import org.mapstruct.*;
 
 import java.util.List;
 
-@Mapper(componentModel = "spring", uses = {AccountMapper.class},
+@Mapper(componentModel = "spring", uses = {AccountMapper.class, MessageReactionMapper.class},
         unmappedTargetPolicy = ReportingPolicy.IGNORE,
         nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
 public interface MessageMapper extends EncryptDecryptMapper {
+    @Mapping(target = "content", expression = "java(encrypt(secretKey, form.getContent()))")
+    @Mapping(target = "document", expression = "java(encrypt(secretKey, form.getDocument()))")
+    @BeanMapping(ignoreByDefault = true)
+    Message fromCreateMessageFormToEncryptEntity(CreateMessageForm form,  @Context String secretKey);
+
+    @Mapping(target = "content", expression = "java(encrypt(secretKey, form.getContent()))")
+    @Mapping(target = "document", expression = "java(encrypt(secretKey, form.getDocument()))")
+    @BeanMapping(ignoreByDefault = true)
+    void fromUpdateMessageFormToEncryptEntity(UpdateMessageForm form, @MappingTarget Message message, @Context String secretKey);
 
     @Mapping(source = "id", target = "id")
     @Mapping(source = "sender", target = "sender", qualifiedByName = "fromEntityToAccountDtoAutoComplete")
     @Mapping(target = "content", expression = "java(decryptAndEncrypt(keyWrapper, message.getContent()))")
     @Mapping(target = "document", expression = "java(decryptAndEncrypt(keyWrapper, message.getDocument()))")
     @Mapping(source = "parent", target = "parent", qualifiedByName = "fromEntityToMessageShortDto")
+    @Mapping(source = "messageReactions", target = "messageReactions", qualifiedByName = "fromEntityToMessageReactionDto")
     @Mapping(source = "createdDate", target = "createdDate")
     @BeanMapping(ignoreByDefault = true)
     @Named("fromEntityToMessageDto")
@@ -48,15 +59,5 @@ public interface MessageMapper extends EncryptDecryptMapper {
     @IterableMapping(elementTargetType = MessageDto.class, qualifiedByName = "fromEntityToMessageShortDto")
     @Named("fromEntityToMessageShortDtoList")
     List<MessageDto> fromEntityToMessageShortDtoList(List<Message> messageList, @Context KeyWrapperDto keyWrapper);
-
-    @Mapping(target = "content", expression = "java(encrypt(secretKey, form.getContent()))")
-    @Mapping(target = "document", expression = "java(encrypt(secretKey, form.getDocument()))")
-    @BeanMapping(ignoreByDefault = true)
-    Message fromCreateMessageFormToEncryptEntity(CreateMessageForm form,  @Context String secretKey);
-
-    @Mapping(target = "content", expression = "java(encrypt(secretKey, form.getContent()))")
-    @Mapping(target = "document", expression = "java(encrypt(secretKey, form.getDocument()))")
-    @BeanMapping(ignoreByDefault = true)
-    void fromUpdateMessageFormToEncryptEntity(UpdateMessageForm form, @MappingTarget Message message, @Context String secretKey);
 
 }

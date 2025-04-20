@@ -17,7 +17,6 @@ public interface MessageReactionMapper {
     @Mapping(source = "id", target = "id")
     @Mapping(source = "account", target = "account", qualifiedByName = "fromEntityToAccountDtoAutoComplete")
     @Mapping(source = "kind", target = "kind")
-    @Mapping(source = "status", target = "status")
     @Mapping(source = "createdDate", target = "createdDate")
     @BeanMapping(ignoreByDefault = true)
     @Named("fromEntityToMessageReactionDto")
