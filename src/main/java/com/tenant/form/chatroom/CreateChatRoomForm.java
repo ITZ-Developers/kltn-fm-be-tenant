@@ -1,6 +1,8 @@
 package com.tenant.form.chatroom;
 
+import com.tenant.dto.chatroom.settings.SettingJsonFormat;
 import com.tenant.validation.ChatroomKind;
+import com.tenant.validation.ValidJsonField;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -19,8 +21,8 @@ public class CreateChatRoomForm {
     @ApiModelProperty(required = true)
     @Size(min = 2)
     private List<Long> memberIds = new ArrayList<>();
-    @NotBlank(message="settings can not be empty")
-    @ApiModelProperty(required = true)
+    @ValidJsonField(classType = SettingJsonFormat.class, allowNull = true)
+    @ApiModelProperty(name = "settings", required = false)
     private String settings;
 
 }
