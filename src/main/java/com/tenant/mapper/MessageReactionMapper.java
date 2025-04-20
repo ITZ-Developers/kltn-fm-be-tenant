@@ -23,5 +23,6 @@ public interface MessageReactionMapper {
     MessageReactionDto fromEntityToMessageReactionDto(MessageReaction messagereaction);
 
     @IterableMapping(elementTargetType = MessageReactionDto.class, qualifiedByName = "fromEntityToMessageReactionDto")
+    @Named("fromEntityListToMessageReactionDtoList")
     List<MessageReactionDto> fromEntityListToMessageReactionDtoList(List<MessageReaction> messagereactionList);
 }
