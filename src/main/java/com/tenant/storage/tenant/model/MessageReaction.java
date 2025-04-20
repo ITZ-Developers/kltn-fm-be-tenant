@@ -19,10 +19,10 @@ public class MessageReaction extends Auditable<String> {
     @GeneratedValue(generator = "idGenerator")
     private Long id;
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "account_Id")
+    @JoinColumn(name = "account_id")
     private Account account;
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "message_Id")
+    @JoinColumn(name = "message_id")
     private Message message;
     private Integer kind; // 1: like, 2: heart, 3: cry, 4: joy, 5: laugh
 }

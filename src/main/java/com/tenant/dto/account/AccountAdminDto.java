@@ -38,4 +38,5 @@ public class AccountAdminDto extends ABasicAdminDto {
     private String publicKey;
     @ApiModelProperty(name = "secretKey")
     private String secretKey;
+    private Boolean isFaceIdRegistered;
 }

@@ -37,4 +37,7 @@ public interface FeignCacheService {
 
     @GetMapping(value = "/v1/cache/get-public-key/{key}")
     ApiMessageDto<GetPublicKeyDto> getPublicKey(@RequestHeader(FeignConstant.HEADER_X_API_KEY) String apiKey, @PathVariable("key") String key);
+
+    @DeleteMapping(value = "/v1/embedding/delete/{id}")
+    ApiMessageDto<String> deleteFaceId(@RequestHeader(FeignConstant.HEADER_X_API_KEY) String apiKey, @PathVariable("id") String id);
 }

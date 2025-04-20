@@ -49,6 +49,7 @@ public interface AccountMapper {
     @Mapping(source = "isSuperAdmin", target = "isSuperAdmin")
     @Mapping(source = "status", target = "status")
     @Mapping(source = "createdDate", target = "createdDate")
+    @Mapping(source = "isFaceIdRegistered", target = "isFaceIdRegistered")
     @BeanMapping(ignoreByDefault = true)
     @Named("fromEntityToAccountAdminDto")
     AccountAdminDto fromEntityToAccountAdminDto(Account account);
@@ -68,6 +69,7 @@ public interface AccountMapper {
     @Mapping(source = "group", target = "group", qualifiedByName = "fromEntityToGroupDto")
     @Mapping(source = "isSuperAdmin", target = "isSuperAdmin")
     @Mapping(source = "department", target = "department", qualifiedByName = "fromEntityToDepartmentDto")
+    @Mapping(source = "isFaceIdRegistered", target = "isFaceIdRegistered")
     @BeanMapping(ignoreByDefault = true)
     @Named("fromEntityToAccountDto")
     AccountDto fromEntityToAccountDto(Account account);
@@ -92,6 +94,7 @@ public interface AccountMapper {
     @Mapping(source = "avatarPath", target = "avatarPath")
     @Mapping(source = "status", target = "status")
     @Mapping(source = "department", target = "department", qualifiedByName = "fromEntityToDepartmentDto")
+    @Mapping(source = "isFaceIdRegistered", target = "isFaceIdRegistered")
     @BeanMapping(ignoreByDefault = true)
     @Named("fromEntityToAccountDtoForNotificationGroup")
     AccountDto fromEntityToAccountDtoForNotificationGroup(Account account);
