@@ -31,7 +31,7 @@ public interface MessageMapper extends EncryptDecryptMapper {
     @Mapping(target = "content", expression = "java(decryptAndEncrypt(keyWrapper, message.getContent()))")
     @Mapping(target = "document", expression = "java(decryptAndEncrypt(keyWrapper, message.getDocument()))")
     @Mapping(source = "parent", target = "parent", qualifiedByName = "fromEntityToMessageShortDto")
-    @Mapping(source = "messageReactions", target = "messageReactions", qualifiedByName = "fromEntityToMessageReactionDto")
+    @Mapping(source = "messageReactions", target = "messageReactions", qualifiedByName = "fromEntityListToMessageReactionDtoList")
     @Mapping(source = "createdDate", target = "createdDate")
     @BeanMapping(ignoreByDefault = true)
     @Named("fromEntityToMessageDto")

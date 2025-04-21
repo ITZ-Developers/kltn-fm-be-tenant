@@ -11,6 +11,7 @@ public class ChatRoomDto extends ABasicAdminDto {
     private String avatar;
     private Integer kind;
     private AccountDto owner;
+    private String settings;
 
     private long totalMembers;
     private MessageDto lastMessage;
