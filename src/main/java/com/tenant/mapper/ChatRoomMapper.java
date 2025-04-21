@@ -29,7 +29,7 @@ public interface ChatRoomMapper {
     @Mapping(source = "kind", target = "kind")
     @Mapping(source = "owner", target = "owner", qualifiedByName = "fromEntityToAccountDtoAutoComplete")
     @Mapping(target = "totalUnreadMessages", ignore = true)
-    @Mapping(source = "status", target = "status")
+    @Mapping(source = "settings", target = "settings")
     @Mapping(source = "createdDate", target = "createdDate")
     @BeanMapping(ignoreByDefault = true)
     @Named("fromEntityToChatRoomDto")
