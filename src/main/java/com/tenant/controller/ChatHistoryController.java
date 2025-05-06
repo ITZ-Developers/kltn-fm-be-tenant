@@ -75,7 +75,7 @@ public class ChatHistoryController extends ABasicController {
     }
 
     @PostMapping(value = "/create", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ApiMessageDto<ChatRequestAnswerDto> create(@Valid @RequestBody CreateChatHistoryForm form, BindingResult bindingResult) {
+    public ApiMessageDto<ChatHistoryDto> create(@Valid @RequestBody CreateChatHistoryForm form, BindingResult bindingResult) {
         Account account = accountRepository.findById(getCurrentUser()).orElse(null);
         if (account == null) {
             throw new BadRequestException(ErrorCode.ACCOUNT_ERROR_NOT_FOUND, "Not found account");
@@ -97,8 +97,7 @@ public class ChatHistoryController extends ABasicController {
         answer.setMessage(AESUtils.encrypt(keyService.getFinanceSecretKey(), res.getData().getAnswer(), FinanceConstant.AES_ZIP_ENABLE));
         chatHistoryRepository.save(answer);
 
-        ChatRequestAnswerDto resDto = new ChatRequestAnswerDto();
-        resDto.setAnswer(AESUtils.encrypt(keyService.getUserSecretKey(), res.getData().getAnswer(), FinanceConstant.AES_ZIP_ENABLE));
+        ChatHistoryDto resDto = chatHistoryMapper.fromEntityToChatHistoryDto(answer, keyService.getFinanceKeyWrapper());
         return makeSuccessResponse(resDto, "Send message success");
     }
 }
