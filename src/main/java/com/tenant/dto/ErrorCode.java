@@ -224,6 +224,7 @@ public class ErrorCode {
      */
     public static final String TAG_ERROR_NOT_FOUND = "ERROR-TAG-0000";
     public static final String TAG_ERROR_NAME_EXISTED = "ERROR-TAG-0001";
+
     /**
      * Starting error code Chatroom
      */
@@ -232,6 +233,7 @@ public class ErrorCode {
     public static final String CHAT_ROOM_ERROR_DIRECT_MESSAGE_NOT_UPDATE = "ERROR-CHAT-ROOM-MEMBER-0002";
     public static final String CHAT_ROOM_ERROR_UNABLE_INVITE_NEW_MEMBERS = "ERROR-CHAT-ROOM-MEMBER-0004";
     public static final String CHAT_ROOM_ERROR_NOT_KIND_GROUP = "ERROR-CHAT-ROOM-0005";
+
     /**
      * Starting error code Chat Room Member
      */
@@ -244,11 +246,14 @@ public class ErrorCode {
     public static final String CHAT_ROOM_MEMBER_ERROR_EXISTED_IN_CHAT_ROOM = "ERROR-CHAT-ROOM-MEMBER-0006";
     public static final String CHAT_ROOM_MEMBER_ERROR_IS_NOT_SEND_MESSAGES = "ERROR-CHAT-ROOM-MEMBER-0007";
 
-
     /**
      * Starting error code Message
      */
     public static final String MESSAGE_ERROR_NOT_FOUND = "ERROR-MESSAGE-0000";
     public static final String MESSAGE_ERROR_NO_OWNER = "ERROR-MESSAGE-0001";
 
+    /**
+     * Starting error code Chat History
+     */
+    public static final String CHAT_HISTORY_ERROR_NOT_FOUND = "ERROR-CHAT-HISTORY-0000";
 }

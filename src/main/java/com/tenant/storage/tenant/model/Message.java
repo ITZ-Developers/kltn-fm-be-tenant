@@ -14,8 +14,7 @@ import javax.persistence.*;
 @EntityListeners(AuditingEntityListener.class)
 @Getter
 @Setter
-public class
-Message extends Auditable<String> {
+public class Message extends Auditable<String> {
     @Id
     @GenericGenerator(name = "idGenerator", strategy = "com.tenant.service.id.IdGenerator")
     @GeneratedValue(generator = "idGenerator")

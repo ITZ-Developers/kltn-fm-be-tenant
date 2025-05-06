@@ -109,11 +109,16 @@ public class FinanceConstant {
 
     public static final Integer CHATROOM_KIND_GROUP = 1;
     public static final Integer CHATROOM_KIND_DIRECT_MESSAGE = 2;
+    public static final Integer CHAT_ROOM_KIND_CHATBOT = 3;
+
     public static final Integer MESSAGE_REACTION_KIND_LIKE = 1;
     public static final Integer MESSAGE_REACTION_KIND_HEART = 2;
     public static final Integer MESSAGE_REACTION_KIND_CRY = 3;
     public static final Integer MESSAGE_REACTION_KIND_JOY = 4;
     public static final Integer MESSAGE_REACTION_KIND_LAUGH = 5;
+
+    public static final Integer CHAT_HISTORY_ROLE_USER = 1;
+    public static final Integer CHAT_HISTORY_ROLE_MODEL = 2;
 
     private FinanceConstant() {
         throw new IllegalStateException("Utility class");
