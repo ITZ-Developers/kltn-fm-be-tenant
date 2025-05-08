@@ -50,4 +50,10 @@ public interface EncryptDecryptMapper {
     default Integer countTotalChildrenByParentId(Long parentId, @Context TaskRepository taskRepository) {
         return taskRepository.countTotalChildrenByParentId(parentId);
     }
+
+    @Named("encryptAndDecrypt")
+    default String encryptAndDecrypt(KeyWrapperDto keyWrapper, String value) {
+        String encryptValue = AESUtils.encrypt(keyWrapper.getEncryptKey(), value, FinanceConstant.AES_ZIP_ENABLE);
+        return AESUtils.decrypt(keyWrapper.getEncryptKey(), encryptValue, FinanceConstant.AES_ZIP_ENABLE);
+    }
 }

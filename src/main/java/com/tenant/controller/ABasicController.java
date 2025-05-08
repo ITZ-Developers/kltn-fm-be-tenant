@@ -4,14 +4,27 @@ import com.tenant.constant.SecurityConstant;
 import com.tenant.dto.ApiMessageDto;
 import com.tenant.jwt.FinanceJwt;
 import com.tenant.service.impl.UserServiceImpl;
+import com.tenant.storage.Auditable;
+import com.tenant.storage.tenant.model.ChatRoom;
+import com.tenant.storage.tenant.model.ChatRoomMember;
+import com.tenant.storage.tenant.model.Message;
+import com.tenant.storage.tenant.repository.ChatRoomMemberRepository;
+import com.tenant.storage.tenant.repository.ChatRoomRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 public class ABasicController {
     @Autowired
     private UserServiceImpl userService;
+
+    @Autowired
+    private ChatRoomMemberRepository chatRoomMemberRepository;
+    @Autowired
+    private ChatRoomRepository chatRoomRepository;
 
     public long getCurrentUser() {
         try {
@@ -57,5 +70,17 @@ public class ABasicController {
     public boolean hasRole(String permissionCode) {
         List<String> authorities = userService.getAuthorities();
         return authorities != null && authorities.contains(permissionCode);
+    }
+
+    public boolean checkIsMemberOfChatRoom(Long accountId, Long chatroomId) {
+        return chatRoomMemberRepository.existsByChatRoomIdAndMemberId(chatroomId, accountId);
+    }
+    public boolean checkOwnerChatRoom(Long accountId, Long chatroomId) {
+        return chatRoomRepository.existsByIdAndOwnerId(chatroomId, accountId);
+    }
+    public Message getLastMessage(ChatRoom chatroom){
+        return chatroom.getMessages().stream()
+                .max(Comparator.comparing(Auditable::getCreatedDate))
+                .orElse(null);
     }
 }

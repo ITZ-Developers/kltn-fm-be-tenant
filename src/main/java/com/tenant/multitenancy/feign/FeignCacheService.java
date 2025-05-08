@@ -4,6 +4,8 @@ import com.tenant.cache.dto.*;
 import com.tenant.dto.ApiMessageDto;
 import com.tenant.multitenancy.config.CustomFeignConfig;
 import com.tenant.multitenancy.constant.FeignConstant;
+import com.tenant.multitenancy.dto.ChatRequestAnswerDto;
+import com.tenant.multitenancy.dto.ChatRequestDto;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.*;
 
@@ -40,4 +42,7 @@ public interface FeignCacheService {
 
     @DeleteMapping(value = "/v1/embedding/delete/{id}")
     ApiMessageDto<String> deleteFaceId(@RequestHeader(FeignConstant.HEADER_X_API_KEY) String apiKey, @PathVariable("id") String id);
+
+    @PostMapping(value = "/v1/gemini/send-message")
+    ApiMessageDto<ChatRequestAnswerDto> sendMessageGenAi(@RequestHeader(FeignConstant.HEADER_X_API_KEY) String apiKey, @RequestBody ChatRequestDto form);
 }

@@ -112,4 +112,8 @@ public class KeyService {
         concurrentMap.put(FinanceConstant.KEY_INFORMATION_SECRET_KEY, decryptKeyInformationSecretKey);
         concurrentMap.put(FinanceConstant.DECRYPT_PASSWORD_SECRET_KEY, decryptPasswordSecretKey);
     }
+
+    public KeyWrapperDto getUserKeyWrapper() {
+        return new KeyWrapperDto(getUserSecretKey(), getFinanceSecretKey());
+    }
 }

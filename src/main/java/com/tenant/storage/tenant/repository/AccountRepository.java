@@ -34,4 +34,15 @@ public interface AccountRepository extends JpaRepository<Account, Long>, JpaSpec
     boolean existsByGroupId(Long groupId);
     List<Account> findAllByGroupId(Long groupId);
     Boolean existsByDepartmentId(Long id);
+
+    List<Account> findAllByIdInAndStatus(List<Long> accountIds, Integer status);
+
+    @Query("SELECT acc FROM Account acc " +
+            "WHERE acc.id IN :accountIds " +
+            "AND acc.status = :status " +
+            "AND acc.id NOT IN ( SELECT crm.member.id FROM ChatRoomMember crm where crm.chatRoom.id = :chatRoomId) ")
+    List<Account> findAllByIdInAndStatusAndNotInChatRoomId(@Param("accountIds") List<Long> accountIds,
+                                                           @Param("status") Integer status,
+                                                           @Param("chatRoomId") Long chatRoomId);
+
 }

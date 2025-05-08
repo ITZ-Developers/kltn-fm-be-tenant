@@ -1,0 +1,231 @@
+package com.tenant.controller;
+
+import com.tenant.constant.FinanceConstant;
+import com.tenant.dto.ApiMessageDto;
+import com.tenant.dto.ErrorCode;
+import com.tenant.dto.ResponseListDto;
+import com.tenant.dto.chatroom.ChatRoomDto;
+import com.tenant.dto.chatroom.OtherMemberInfoInterface;
+import com.tenant.dto.message.MessageDto;
+import com.tenant.exception.BadRequestException;
+import com.tenant.form.message.CreateMessageForm;
+import com.tenant.form.message.UpdateMessageForm;
+import com.tenant.mapper.AccountMapper;
+import com.tenant.mapper.MessageMapper;
+import com.tenant.service.KeyService;
+import com.tenant.service.chat.ChatService;
+import com.tenant.storage.tenant.model.*;
+import com.tenant.storage.tenant.model.criteria.MessageCriteria;
+import com.tenant.storage.tenant.repository.*;
+import com.tenant.utils.JSONUtils;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.http.MediaType;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.*;
+
+import javax.validation.Valid;
+import java.util.*;
+import java.util.stream.Collectors;
+
+@Slf4j
+@RestController
+@RequestMapping("/v1/message")
+@CrossOrigin(origins = "*", allowedHeaders = "*")
+public class MessageController extends ABasicController {
+    @Autowired
+    private ChatRoomMemberRepository chatRoomMemberRepository;
+    @Autowired
+    private MessageReactionRepository messageReactionRepository;
+    @Autowired
+    private MessageRepository messageRepository;
+    @Autowired
+    private MessageMapper messageMapper;
+    @Autowired
+    private AccountRepository accountRepository;
+    @Autowired
+    private ChatRoomRepository chatroomRepository;
+    @Autowired
+    private KeyService keyService;
+    @Autowired
+    private ChatService chatService;
+    @Autowired
+    private AccountMapper accountMapper;
+
+    private MessageDto getFormattedMessageDto(Message message) {
+        Long currentId = getCurrentUser();
+        List<MessageReaction> messageReactions = message.getMessageReactions();
+        List<ChatRoomMember> seenMembers = message.getSeenMembers();
+        List<Account> seenAccounts = seenMembers.stream().map(ChatRoomMember::getMember).collect(Collectors.toList());
+        MessageDto dto = messageMapper.fromEntityToMessageDto(message, keyService.getFinanceKeyWrapper());
+        dto.setIsSender(Objects.equals(message.getSender().getId(), currentId));
+        dto.setIsChildren(message.getParent() != null);
+        dto.setTotalReactions((long) messageReactions.size());
+        messageReactions.stream().filter(r -> Objects.equals(r.getAccount().getId(), currentId)).findFirst().ifPresent(r -> dto.setMyReaction(r.getKind()));
+        dto.setIsReacted(!messageReactions.isEmpty());
+        dto.setTotalSeenMembers((long) seenMembers.size());
+        dto.setSeenMembers(accountMapper.fromEntityListToAccountDtoListAutoComplete(seenAccounts));
+        return dto;
+    }
+
+    @GetMapping(value = "/get/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ApiMessageDto<MessageDto> get(@PathVariable("id") Long id) {
+        Message message = messageRepository.findById(id).orElse(null);
+        if (message == null) {
+            throw new BadRequestException(ErrorCode.MESSAGE_ERROR_NOT_FOUND, "Not found message");
+        }
+        Long currentId = getCurrentUser();
+        ChatRoom chatRoom = message.getChatRoom();
+        boolean isMemberOfChatRoom = checkIsMemberOfChatRoom(currentId, chatRoom.getId());
+        if (!isMemberOfChatRoom) {
+            throw new BadRequestException(ErrorCode.CHAT_ROOM_MEMBER_ERROR_NO_JOIN, "Account no in this room");
+        }
+        MessageDto dto = getFormattedMessageDto(message);
+        ChatRoomMember chatRoomMember = chatRoomMemberRepository.findFirstByChatRoomIdAndMemberId(chatRoom.getId(), currentId);
+        if (chatRoomMember.getLastReadMessage() == null || message.getCreatedDate().after(chatRoomMember.getLastReadMessage().getCreatedDate())) {
+            chatRoomMember.setLastReadMessage(message);
+            chatRoomMemberRepository.save(chatRoomMember);
+            chatService.broadcastMessageUpdated(chatRoom.getId(), message.getId());
+        }
+        return makeSuccessResponse(dto, "Get message success");
+    }
+
+    @GetMapping(value = "/list", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ApiMessageDto<ResponseListDto<List<MessageDto>>> list(MessageCriteria messageCriteria, Pageable pageable) {
+        if (messageCriteria.getIsPaged().equals(FinanceConstant.IS_PAGED_FALSE)) {
+            pageable = PageRequest.of(0, pageable.getPageSize(),
+                    Sort.by(Sort.Order.desc("createdDate")));
+        } else if (pageable.getSort().isUnsorted()) {
+            pageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by(Sort.Order.desc("createdDate")));
+        }
+        if (messageCriteria.getChatRoomId() != null) {
+            throw new BadRequestException("Required chatroomId");
+        }
+        Long currentId = getCurrentUser();
+        boolean isMemberOfChatRoom = checkIsMemberOfChatRoom(currentId, messageCriteria.getChatRoomId());
+        if (!isMemberOfChatRoom) {
+            throw new BadRequestException(ErrorCode.CHAT_ROOM_MEMBER_ERROR_NO_JOIN, "Account no in this room");
+        }
+        Page<Message> listMessage = messageRepository.findAll(messageCriteria.getCriteria(), pageable);
+        ResponseListDto<List<MessageDto>> responseListObj = new ResponseListDto<>();
+
+        List<MessageDto> dtos = listMessage.getContent().stream().map(this::getFormattedMessageDto).collect(Collectors.toList());
+
+        responseListObj.setContent(dtos);
+        responseListObj.setTotalPages(listMessage.getTotalPages());
+        responseListObj.setTotalElements(listMessage.getTotalElements());
+
+        // Update last message for member
+        ChatRoomMember chatRoomMember = chatRoomMemberRepository.findFirstByChatRoomIdAndMemberId(messageCriteria.getChatRoomId(), currentId);
+        Message lastMessage = messageRepository.findLastMessageByChatRoomId(messageCriteria.getChatRoomId());
+        if (chatRoomMember.getLastReadMessage() == null || lastMessage.getCreatedDate().after(chatRoomMember.getLastReadMessage().getCreatedDate())) {
+            chatRoomMember.setLastReadMessage(lastMessage);
+            chatRoomMemberRepository.save(chatRoomMember);
+            chatService.broadcastMessageUpdated(chatRoomMember.getChatRoom().getId(), lastMessage.getId());
+        }
+        return makeSuccessResponse(responseListObj, "Get list message success");
+    }
+
+    @PostMapping(value = "/create", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ApiMessageDto<String> create(@Valid @RequestBody CreateMessageForm form, BindingResult bindingResult) {
+        if (!StringUtils.isNotBlank(form.getContent()) && !StringUtils.isNotBlank(form.getDocument())) {
+            throw new BadRequestException("Required content or document");
+        }
+        Message message = messageMapper.fromCreateMessageFormToEncryptEntity(form, keyService.getFinanceSecretKey());
+        Long currentId = getCurrentUser();
+        Account sender = accountRepository.findById(currentId).orElse(null);
+        if (sender == null) {
+            throw new BadRequestException(ErrorCode.ACCOUNT_ERROR_NOT_FOUND, "Not found sender");
+        }
+        ChatRoom chatRoom = chatroomRepository.findById(form.getChatroomId()).orElse(null);
+        if (chatRoom == null) {
+            throw new BadRequestException(ErrorCode.CHAT_ROOM_ERROR_NOT_FOUND, "Not found chatRoom");
+        }
+        boolean isMemberOfChatRoom = checkIsMemberOfChatRoom(currentId, chatRoom.getId());
+        boolean isOwnerOfChatRoom = checkOwnerChatRoom(currentId, chatRoom.getId());
+        boolean allowSendMessages = Boolean.valueOf(JSONUtils.getDataByKey(chatRoom.getSettings(), FinanceConstant.CHAT_ROOM_SETTING_ALLOW_SEND_MESSAGES));
+        if (!isMemberOfChatRoom) {
+            throw new BadRequestException(ErrorCode.CHAT_ROOM_MEMBER_ERROR_NO_JOIN, "Account no in this room");
+        }
+        if (!isOwnerOfChatRoom && !allowSendMessages) {
+            throw new BadRequestException(ErrorCode.CHAT_ROOM_MEMBER_ERROR_IS_NOT_SEND_MESSAGES, "Members unable to send message");
+        }
+        if (form.getParentMessageId() != null) {
+            Message parent = messageRepository.findFirstByIdAndChatRoomId(form.getParentMessageId(), chatRoom.getId()).orElse(null);
+            if (parent == null) {
+                throw new BadRequestException(ErrorCode.MESSAGE_ERROR_NOT_FOUND, "Message parent can not found");
+            }
+            message.setParent(parent);
+        }
+        message.setSender(sender);
+        message.setChatRoom(chatRoom);
+        messageRepository.save(message);
+        chatService.sendMessageToChatRoomId(chatRoom.getId(), message.getId());
+        return makeSuccessResponse(null, "Create message success");
+    }
+
+    @PutMapping(value = "/update", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ApiMessageDto<String> update(@Valid @RequestBody UpdateMessageForm form, BindingResult bindingResult) {
+        if (!StringUtils.isNotBlank(form.getContent()) && !StringUtils.isNotBlank(form.getDocument())) {
+            throw new BadRequestException("Required content or document");
+        }
+        Message message = messageRepository.findById(form.getId()).orElse(null);
+        if (message == null) {
+            throw new BadRequestException(ErrorCode.MESSAGE_ERROR_NOT_FOUND, "Not found message");
+        }
+        messageMapper.fromUpdateMessageFormToEncryptEntity(form, message, keyService.getFinanceSecretKey());
+        Long currentId = getCurrentUser();
+        ChatRoom chatroom = message.getChatRoom();
+        boolean isMemberOfChatRoom = checkIsMemberOfChatRoom(currentId, message.getChatRoom().getId());
+        boolean isOwnerOfChatRoom = checkOwnerChatRoom(currentId, chatroom.getId());
+        boolean allowSendMessages = Boolean.valueOf(JSONUtils.getDataByKey(chatroom.getSettings(), FinanceConstant.CHAT_ROOM_SETTING_ALLOW_SEND_MESSAGES));
+        if (!isMemberOfChatRoom) {
+            throw new BadRequestException(ErrorCode.CHAT_ROOM_MEMBER_ERROR_NO_JOIN, "Account no in this room");
+        }
+        if (!Objects.equals(message.getSender().getId(), getCurrentUser())) {
+            throw new BadRequestException(ErrorCode.MESSAGE_ERROR_NO_OWNER, "Not found message");
+        }
+        if (!isOwnerOfChatRoom && !allowSendMessages) {
+            throw new BadRequestException(ErrorCode.CHAT_ROOM_MEMBER_ERROR_IS_NOT_SEND_MESSAGES, "Members unable to update message");
+        }
+        if (!checkIsMemberOfChatRoom(getCurrentUser(), message.getChatRoom().getId())) {
+            throw new BadRequestException(ErrorCode.CHAT_ROOM_MEMBER_ERROR_NO_JOIN, "Account no in this room");
+        }
+        message.setDocument(form.getDocument());
+        message.setContent(form.getContent());
+        messageRepository.save(message);
+        chatService.broadcastMessageUpdated(chatroom.getId(), message.getId());
+        return makeSuccessResponse(null, "Update message success");
+    }
+
+    @DeleteMapping(value = "/delete/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ApiMessageDto<String> delete(@PathVariable("id") Long id) {
+        Message message = messageRepository.findById(id).orElse(null);
+        if (message == null) {
+            throw new BadRequestException(ErrorCode.MESSAGE_ERROR_NOT_FOUND, "Not found message");
+        }
+        Long currentId = getCurrentUser();
+        ChatRoom chatroom = new ChatRoom();
+        boolean isMemberOfChatRoom = checkIsMemberOfChatRoom(currentId, message.getChatRoom().getId());
+        boolean isOwnerOfChatRoom = checkOwnerChatRoom(currentId, chatroom.getId());
+        if (!isMemberOfChatRoom) {
+            throw new BadRequestException(ErrorCode.CHAT_ROOM_MEMBER_ERROR_NO_JOIN, "Account no in this room");
+        }
+        if (!isOwnerOfChatRoom && !Objects.equals(message.getSender().getId(), getCurrentUser())) {
+            throw new BadRequestException(ErrorCode.MESSAGE_ERROR_NO_OWNER, "Not found message");
+        }
+        messageReactionRepository.deleteAllByMessageId(id);
+        message.setContent(null);
+        message.setDocument(null);
+        message.setIsDeleted(true);
+        messageRepository.save(message);
+        chatService.broadcastMessageUpdated(chatroom.getId(), message.getId());
+        return makeSuccessResponse(null, "Delete message success");
+    }
+
+}
