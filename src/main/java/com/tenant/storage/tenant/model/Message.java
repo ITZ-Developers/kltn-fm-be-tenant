@@ -37,5 +37,5 @@ public class Message extends Auditable<String> {
     @OneToMany(mappedBy = "message", fetch = FetchType.LAZY)
     private List<MessageReaction> messageReactions = new ArrayList<>();
     @OneToMany(mappedBy = "lastReadMessage", fetch = FetchType.LAZY)
-    List<ChatRoomMember> seenMember = new ArrayList<>();
+    List<ChatRoomMember> seenMembers = new ArrayList<>();
 }

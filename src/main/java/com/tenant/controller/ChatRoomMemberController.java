@@ -3,7 +3,7 @@ package com.tenant.controller;
 import com.tenant.constant.FinanceConstant;
 import com.tenant.service.KeyService;
 import com.tenant.service.MessageService;
-import com.tenant.storage.tenant.model.*;
+import com.tenant.service.chat.ChatService;
 import com.tenant.dto.ApiMessageDto;
 import com.tenant.dto.ErrorCode;
 import com.tenant.dto.ResponseListDto;
@@ -37,10 +37,6 @@ import java.util.stream.Collectors;
 @CrossOrigin(origins = "*", allowedHeaders = "*")
 public class ChatRoomMemberController extends ABasicController {
     @Autowired
-    private MessageReactionRepository messageReactionRepository;
-    @Autowired
-    private MessageRepository messageRepository;
-    @Autowired
     private ChatRoomMemberRepository chatRoomMemberRepository;
     @Autowired
     private ChatRoomMemberMapper chatRoomMemberMapper;
@@ -52,6 +48,8 @@ public class ChatRoomMemberController extends ABasicController {
     private MessageService messageService;
     @Autowired
     private KeyService keyService;
+    @Autowired
+    private ChatService chatService;
 
     @GetMapping(value = "/list", produces = MediaType.APPLICATION_JSON_VALUE)
     public ApiMessageDto<ResponseListDto<List<ChatRoomMemberDto>>> list(ChatRoomMemberCriteria chatRoomMemberCriteria, Pageable pageable) {
@@ -90,9 +88,9 @@ public class ChatRoomMemberController extends ABasicController {
         if (!Objects.equals(chatroom.getKind(), FinanceConstant.CHATROOM_KIND_GROUP)) {
             throw new BadRequestException(ErrorCode.CHAT_ROOM_ERROR_NOT_KIND_GROUP, "Chat room kind is not kind group");
         }
-        Boolean isOwnerOfChatRoom = checkOwnerChatRoom(getCurrentUser(), chatroom.getId());
-        Boolean allowNotOwnerCanInvite = Boolean.valueOf(JSONUtils.getDataByKey(chatroom.getSettings(), FinanceConstant.CHAT_ROOM_SETTING_ALLOW_INVITE_MEMBERS));
-        Boolean isMemberOfChatRoom = checkIsMemberOfChatRoom(getCurrentUser(), chatroom.getId());
+        boolean isOwnerOfChatRoom = checkOwnerChatRoom(getCurrentUser(), chatroom.getId());
+        boolean allowNotOwnerCanInvite = Boolean.parseBoolean(JSONUtils.getDataByKey(chatroom.getSettings(), FinanceConstant.CHAT_ROOM_SETTING_ALLOW_INVITE_MEMBERS));
+        boolean isMemberOfChatRoom = checkIsMemberOfChatRoom(getCurrentUser(), chatroom.getId());
         if (!isMemberOfChatRoom) {
             throw new BadRequestException(ErrorCode.CHAT_ROOM_MEMBER_ERROR_NO_JOIN, "Current user is not member of group");
         }
@@ -107,15 +105,15 @@ public class ChatRoomMemberController extends ABasicController {
         if (chatRoomMemberRepository.checkExistChatRoomMemberInAccountIds(accountIds, chatroom.getId())) {
             throw new BadRequestException(ErrorCode.CHAT_ROOM_MEMBER_ERROR_EXISTED_IN_CHAT_ROOM, "Exists account in chat room");
         }
-        Message lastMessage = messageRepository.findLastMessageByChatRoomId(chatroom.getId());
         for (Account account : accounts) {
             ChatRoomMember chatRoomMember = new ChatRoomMember();
             chatRoomMember.setMember(account);
             chatRoomMember.setChatRoom(chatroom);
-            chatRoomMember.setLastReadMessage(lastMessage);
             chatRoomMembers.add(chatRoomMember);
         }
         chatRoomMemberRepository.saveAll(chatRoomMembers);
+        chatService.sendMsgChatRoomCreated(chatroom.getId(), accountIds);
+        chatService.sendMsgChatRoomUpdated(chatroom.getId(), chatRoomMemberRepository.findAllMemberIdsByChatRoomIdAndNotIn(chatroom.getId(), accountIds));
         return makeSuccessResponse(null, "Create chat room member success");
     }
 
@@ -133,7 +131,7 @@ public class ChatRoomMemberController extends ABasicController {
         if (!Objects.equals(chatRoomMember.getMember().getId(),chatRoom.getOwner().getId())) {
             throw new BadRequestException(ErrorCode.CHAT_ROOM_MEMBER_IS_OWNER, "Not found chat room member");
         }
-        Boolean isOwnerOfChatRoom = checkOwnerChatRoom(currentUserId, chatRoomMember.getChatRoom().getId());
+        boolean isOwnerOfChatRoom = checkOwnerChatRoom(currentUserId, chatRoomMember.getChatRoom().getId());
         if (!isOwnerOfChatRoom) {
             throw new BadRequestException(ErrorCode.CHAT_ROOM_ERROR_NO_OWNER, "Can not delete member if not owner");
         }
@@ -141,20 +139,22 @@ public class ChatRoomMemberController extends ABasicController {
             throw new BadRequestException(ErrorCode.CHAT_ROOM_MEMBER_ERROR_KIND_GROUP_HAS_MORE_THAN_3, "number of list members can not less than 2");
         }
         messageService.deleteDataOfMemberOfChatRoom(chatRoom.getId(), currentUserId);
+        chatService.sendMsgChatRoomDeleted(chatRoom.getId(), List.of(chatRoomMember.getMember().getId()));
+        chatService.sendMsgChatRoomUpdated(chatRoom.getId(), chatRoomMemberRepository.findAllMemberIdsByChatRoomIdAndNotIn(chatRoom.getId(), List.of(chatRoomMember.getMember().getId())));
         return makeSuccessResponse(null, "Delete chat room member success");
     }
 
     @DeleteMapping(value = "/leave/{chatroomId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ApiMessageDto<String> leave(@PathVariable("chatroomId") Long chatroomId) {
         ChatRoom chatroom = chatroomRepository.findById(chatroomId).orElse(null);
+        if (chatroom == null) {
+            throw new BadRequestException(ErrorCode.CHAT_ROOM_ERROR_NOT_FOUND, "Not found room");
+        }
         Long currentUserId = getCurrentUser();
-        Boolean isOwnerOfChatRoom = checkOwnerChatRoom(currentUserId, chatroom.getId());
+        boolean isOwnerOfChatRoom = checkOwnerChatRoom(currentUserId, chatroom.getId());
         boolean isMember = checkIsMemberOfChatRoom(currentUserId, chatroomId);
         if (!isMember) {
             throw new BadRequestException(ErrorCode.CHAT_ROOM_MEMBER_ERROR_NO_JOIN, "Current user is not member of chatroom");
-        }
-        if (chatroom == null) {
-            throw new BadRequestException(ErrorCode.CHAT_ROOM_ERROR_NOT_FOUND, "Not found room");
         }
         if (chatroom.getChatRoomMembers().size() == 3 && !isOwnerOfChatRoom) {
             throw new BadRequestException(ErrorCode.CHAT_ROOM_MEMBER_ERROR_KIND_GROUP_HAS_MORE_THAN_3, "number of list members can not less than 2");
@@ -164,8 +164,11 @@ public class ChatRoomMemberController extends ABasicController {
         }
         if (isOwnerOfChatRoom) {
             messageService.deleteDataOfChatRoom(chatroomId);
+            chatService.sendMsgChatRoomDeleted(chatroom.getId());
         } else {
             messageService.deleteDataOfMemberOfChatRoom(chatroomId, currentUserId);
+            chatService.sendMsgChatRoomDeleted(chatroomId, List.of(currentUserId));
+            chatService.sendMsgChatRoomUpdated(chatroomId, chatRoomMemberRepository.findAllMemberIdsByChatRoomIdAndNotIn(chatroomId, List.of(currentUserId)));
         }
         return makeSuccessResponse(null, "Create chat room member success");
     }

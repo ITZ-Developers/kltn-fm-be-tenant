@@ -21,7 +21,7 @@ public class ChatRoom extends Auditable<String> {
     private Long id;
     private String name;
     private String avatar;
-    private Integer kind; // 1: group, 2: direct message, 3: chatbot
+    private Integer kind; // 1: group, 2: direct message
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "owner_id")
     private Account owner;

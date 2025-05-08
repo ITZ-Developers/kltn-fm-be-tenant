@@ -1,7 +1,5 @@
 package com.tenant.service;
 
-import com.tenant.mapper.ChatRoomMemberMapper;
-import com.tenant.storage.tenant.model.ChatRoom;
 import com.tenant.storage.tenant.repository.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,11 +15,8 @@ public class MessageService {
     @Autowired
     private ChatRoomMemberRepository chatRoomMemberRepository;
     @Autowired
-    private ChatRoomMemberMapper chatRoomMemberMapper;
-    @Autowired
     private ChatRoomRepository chatroomRepository;
-    @Autowired
-    private AccountRepository accountRepository;
+
     public void deleteDataOfChatRoom(Long chatroomId){
         messageReactionRepository.deleteAllByChatRoomId(chatroomId);
         messageRepository.updateParentNullByChatRoomId(chatroomId);

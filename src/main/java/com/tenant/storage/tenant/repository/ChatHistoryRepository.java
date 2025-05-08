@@ -7,5 +7,5 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import java.util.List;
 
 public interface ChatHistoryRepository extends JpaRepository<ChatHistory, Long>, JpaSpecificationExecutor<ChatHistory> {
-    List<ChatHistory> findAllByAccountId(Long accountId);
+    List<ChatHistory> findAllByAccountIdOrderByCreatedDateAsc(Long accountId);
 }

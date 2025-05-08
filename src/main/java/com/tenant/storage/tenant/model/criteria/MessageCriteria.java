@@ -57,6 +57,7 @@ public class MessageCriteria {
             if (getStatus() != null) {
                 predicates.add(cb.equal(root.get("status"), getStatus()));
             }
+            query.orderBy(cb.desc(root.get("createdDate")));
             return cb.and(predicates.toArray(new Predicate[0]));
         };
     }

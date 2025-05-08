@@ -47,4 +47,21 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long>, JpaSp
             @Param("chatRoomIds") List<Long> chatRoomIds,
             @Param("currentUserId") Long currentUserId,
             @Param("directMessageKind") Integer directMessageKind);
+
+    @Query("SELECT COUNT(msg.id) " +
+            "FROM ChatRoomMember crm JOIN crm.chatRoom.messages msg " +
+            "WHERE crm.chatRoom.id = :chatRoomId AND crm.member.id = :userId " +
+            "AND (crm.lastReadMessage IS NULL OR msg.createdDate > crm.lastReadMessage.createdDate) " +
+            "GROUP BY crm.chatRoom.id")
+    Long countUnreadMessagesByChatRoomId(@Param("chatRoomId") Long chatRoomId, @Param("userId") Long userId);
+
+    @Query("SELECT a " +
+            "FROM ChatRoomMember crm JOIN crm.member a " +
+            "WHERE crm.chatRoom.id = :chatRoomId " +
+            "AND crm.member.id != :currentUserId " +
+            "AND crm.chatRoom.kind = :directMessageKind")
+    Account findOtherMemberInDirectMessages(
+            @Param("chatRoomId") Long chatRoomId,
+            @Param("currentUserId") Long currentUserId,
+            @Param("directMessageKind") Integer directMessageKind);
 }

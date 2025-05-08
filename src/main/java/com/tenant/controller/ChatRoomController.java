@@ -1,5 +1,6 @@
 package com.tenant.controller;
 
+import com.tenant.cache.SessionService;
 import com.tenant.constant.FinanceConstant;
 import com.tenant.dto.ApiMessageDto;
 import com.tenant.dto.ErrorCode;
@@ -12,6 +13,7 @@ import com.tenant.form.chatroom.UpdateChatRoomForm;
 import com.tenant.mapper.ChatRoomMapper;
 import com.tenant.mapper.MessageMapper;
 import com.tenant.service.KeyService;
+import com.tenant.service.chat.ChatService;
 import com.tenant.storage.tenant.model.*;
 import com.tenant.storage.tenant.model.Account;
 import com.tenant.storage.tenant.model.ChatRoom;
@@ -55,6 +57,10 @@ public class ChatRoomController extends ABasicController {
     private MessageMapper messageMapper;
     @Autowired
     private KeyService keyService;
+    @Autowired
+    private ChatService chatService;
+    @Autowired
+    private SessionService sessionService;
 
     @GetMapping(value = "/get/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ApiMessageDto<ChatRoomDto> get(@PathVariable("id") Long id) {
@@ -62,7 +68,22 @@ public class ChatRoomController extends ABasicController {
         if (chatroom == null) {
             throw new BadRequestException(ErrorCode.CHAT_ROOM_ERROR_NOT_FOUND, "Not found chatroom");
         }
-        return makeSuccessResponse(chatRoomMapper.fromEntityToChatRoomDto(chatroom), "Get chatroom success");
+        ChatRoomDto dto = chatRoomMapper.fromEntityToChatRoomDto(chatroom);
+        Message lastMessage = messageRepository.findLastMessageByChatRoomId(chatroom.getId());
+        dto.setLastMessage(messageMapper.fromEntityToMessageDto(lastMessage, keyService.getFinanceKeyWrapper()));
+        dto.setTotalUnreadMessages(chatroomRepository.countUnreadMessagesByChatRoomId(chatroom.getId(), getCurrentUser()));
+        if (FinanceConstant.CHATROOM_KIND_DIRECT_MESSAGE.equals(chatroom.getKind())) {
+            Account other = chatroomRepository.findOtherMemberInDirectMessages(chatroom.getId(), getCurrentUser(), FinanceConstant.CHATROOM_KIND_DIRECT_MESSAGE);
+            dto.setOwner(null);
+            dto.setSettings(null);
+            dto.setAvatar(other.getAvatarPath());
+            dto.setName(other.getFullName());
+            dto.setLastLogin(sessionService.getLastLoginByAccount(other));
+        } else {
+            dto.setTotalMembers(chatRoomMemberRepository.countAllByChatRoomId(chatroom.getId()));
+            dto.setIsOwner(Objects.equals(getCurrentUser(), chatroom.getOwner().getId()));
+        }
+        return makeSuccessResponse(dto, "Get chatroom success");
     }
 
     /**
@@ -76,7 +97,6 @@ public class ChatRoomController extends ABasicController {
         }
         Long currentUserId = getCurrentUser();
         chatroomCriteria.setMemberId(currentUserId);
-        chatroomCriteria.setShouldSortByLastMessage(true);
         Page<ChatRoom> chatRoomPage = chatroomRepository.findAll(chatroomCriteria.getCriteria(), pageable);
         List<ChatRoom> chatRooms = chatRoomPage.getContent();
         List<Long> chatRoomIds = chatRooms.stream().map(ChatRoom::getId).collect(Collectors.toList());
@@ -96,14 +116,16 @@ public class ChatRoomController extends ABasicController {
                         OtherMemberInfoInterface::getChatRoomId,
                         Function.identity()));
 
+        // sort giảm dần theo createdDate (mới nhất lên đầu)
         List<ChatRoomDto> dtos = chatRooms.stream().map(chatRoom -> {
             ChatRoomDto dto = chatRoomMapper.fromEntityToChatRoomDto(chatRoom);
-            dto.setTotalMembers(memberCountMap.getOrDefault(chatRoom.getId(), 0L).intValue());
+            dto.setTotalMembers(memberCountMap.getOrDefault(chatRoom.getId(), 0L));
             if (Objects.equals(chatRoom.getKind(), FinanceConstant.CHATROOM_KIND_DIRECT_MESSAGE)) {
+                dto.setOwner(null);
                 OtherMemberInfoInterface otherMember = otherMemberMap.get(chatRoom.getId());
                 if (otherMember != null) {
-                    dto.setOtherFullName(otherMember.getFullName());
-                    dto.setOtherAvatar(otherMember.getAvatar());
+                    dto.setName(otherMember.getFullName());
+                    dto.setAvatar(otherMember.getAvatar());
                 }
             }
             Message lastMessage = lastMessageMap.get(chatRoom.getId());
@@ -112,7 +134,14 @@ public class ChatRoomController extends ABasicController {
             }
             dto.setTotalUnreadMessages(unreadCountMap.getOrDefault(chatRoom.getId(), 0L));
             return dto;
-        }).collect(Collectors.toList());
+        }).sorted(Comparator.comparing((ChatRoomDto dto) -> dto.getLastMessage() == null)
+                .thenComparing(dto -> {
+                    if (dto.getLastMessage() == null) {
+                        return dto.getCreatedDate();
+                    } else {
+                        return dto.getLastMessage().getCreatedDate();
+                    }
+                }, Comparator.reverseOrder())).collect(Collectors.toList());
 
         responseListObj.setContent(dtos);
         responseListObj.setTotalPages(chatRoomPage.getTotalPages());
@@ -163,6 +192,7 @@ public class ChatRoomController extends ABasicController {
         }
         chatroomRepository.save(chatroom);
         chatRoomMemberRepository.saveAll(chatRoomMembers);
+        chatService.sendMsgChatRoomCreated(chatroom.getId());
         return makeSuccessResponse(null, "Create chatroom group success");
     }
 
@@ -177,7 +207,7 @@ public class ChatRoomController extends ABasicController {
         chatroom.setKind(FinanceConstant.CHATROOM_KIND_DIRECT_MESSAGE);
         Account other = accountRepository.findById(form.getAccountId()).orElse(null);
         if (other == null) {
-            throw new BadRequestException(ErrorCode.ACCOUNT_ERROR_NOT_FOUND, "Not found owner");
+            throw new BadRequestException(ErrorCode.ACCOUNT_ERROR_NOT_FOUND, "Not found other");
         }
 
         List<ChatRoomMember> chatRoomMembers = new ArrayList<>();
@@ -195,6 +225,7 @@ public class ChatRoomController extends ABasicController {
         chatRoomMemberRepository.saveAll(chatRoomMembers);
 
         ChatRoomDto newChatRoomDto = chatRoomMapper.fromEntityToChatRoomDto(chatroom);
+        chatService.sendMsgChatRoomCreated(chatroom.getId());
         return makeSuccessResponse(newChatRoomDto, "Create chatroom direct message success");
     }
 
@@ -207,18 +238,17 @@ public class ChatRoomController extends ABasicController {
         if (FinanceConstant.CHATROOM_KIND_DIRECT_MESSAGE.equals(chatroom.getKind())) {
             throw new BadRequestException(ErrorCode.CHAT_ROOM_ERROR_DIRECT_MESSAGE_NOT_UPDATE, "chat room direct can not update");
         }
-        Boolean allowNotOwnerCanUpdate = Boolean.valueOf(JSONUtils.getDataByKey(chatroom.getSettings(), FinanceConstant.CHAT_ROOM_SETTING_ALLOW_UPDATE));
-        Boolean checkIsOwner = checkOwnerChatRoom(getCurrentUser(), chatroom.getId());
+        boolean allowNotOwnerCanUpdate = Boolean.parseBoolean(JSONUtils.getDataByKey(chatroom.getSettings(), FinanceConstant.CHAT_ROOM_SETTING_ALLOW_UPDATE));
+        boolean checkIsOwner = checkOwnerChatRoom(getCurrentUser(), chatroom.getId());
         if (!checkIsOwner && !allowNotOwnerCanUpdate) {
             throw new BadRequestException(ErrorCode.CHAT_ROOM_MEMBER_ERROR_IS_NOT_OWNER_AND_NOT_ALLOW_UPDATE, "Chat room updated by owner or not owner if allow to update");
         }
-
         chatRoomMapper.fromUpdateChatRoomFormToEntity(form, chatroom);
         if(checkIsOwner){
             chatroom.setSettings(form.getSettings());
         }
-
         chatroomRepository.save(chatroom);
+        chatService.sendMsgChatRoomUpdated(chatroom.getId());
         return makeSuccessResponse(null, "Update chatroom success");
     }
 
@@ -228,8 +258,8 @@ public class ChatRoomController extends ABasicController {
         if (chatroom == null) {
             throw new BadRequestException(ErrorCode.CHAT_ROOM_ERROR_NOT_FOUND, "Not found chatroom");
         }
-        Boolean checkIsOwner = checkOwnerChatRoom(getCurrentUser(), chatroom.getId());
-        Boolean checkIsMember = checkIsMemberOfChatRoom(getCurrentUser(),chatroom.getId());
+        boolean checkIsOwner = checkOwnerChatRoom(getCurrentUser(), chatroom.getId());
+        boolean checkIsMember = checkIsMemberOfChatRoom(getCurrentUser(),chatroom.getId());
         if(FinanceConstant.CHATROOM_KIND_GROUP.equals(chatroom.getKind()) && !checkIsOwner){
             throw new BadRequestException(ErrorCode.CHAT_ROOM_ERROR_NO_OWNER,"Can not delete if not owner");
         }
@@ -242,6 +272,7 @@ public class ChatRoomController extends ABasicController {
         messageRepository.deleteAllByChatRoomId(id);
         chatRoomMemberRepository.deleteAllByChatRoomId(id);
         chatroomRepository.deleteById(id);
+        chatService.sendMsgChatRoomDeleted(chatroom.getId());
         return makeSuccessResponse(null, "Delete chatroom success");
     }
 }

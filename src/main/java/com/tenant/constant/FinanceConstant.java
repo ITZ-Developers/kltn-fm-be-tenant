@@ -17,7 +17,12 @@ public class FinanceConstant {
     public static final String CMD_SCHEDULE_SERVICE = "CMD_SCHEDULE_SERVICE";
     public static final String CMD_LOCK_DEVICE = "CMD_LOCK_DEVICE";
     public static final String CMD_LOGIN_QR_CODE = "CMD_LOGIN_QR_CODE";
-
+    public static final String CMD_CHAT_ROOM_CREATED = "CMD_CHAT_ROOM_CREATED";
+    public static final String CMD_CHAT_ROOM_UPDATED = "CMD_CHAT_ROOM_UPDATED";
+    public static final String CMD_CHAT_ROOM_DELETED = "CMD_CHAT_ROOM_DELETED";
+    public static final String CMD_NEW_MESSAGE = "CMD_NEW_MESSAGE";
+    public static final String CMD_MESSAGE_UPDATED = "CMD_MESSAGE_UPDATED";
+    
     public static final String NAME_PATTERN = "^[\\p{L} ]+$";
     public static final String USERNAME_PATTERN = "^[a-z0-9_]+$";
     public static final String PASSWORD_PATTERN = "^[a-zA-Z0-9!@#$%^&*()_+-=]+$";
@@ -109,7 +114,6 @@ public class FinanceConstant {
 
     public static final Integer CHATROOM_KIND_GROUP = 1;
     public static final Integer CHATROOM_KIND_DIRECT_MESSAGE = 2;
-    public static final Integer CHAT_ROOM_KIND_CHATBOT = 3;
 
     public static final Integer MESSAGE_REACTION_KIND_LIKE = 1;
     public static final Integer MESSAGE_REACTION_KIND_HEART = 2;

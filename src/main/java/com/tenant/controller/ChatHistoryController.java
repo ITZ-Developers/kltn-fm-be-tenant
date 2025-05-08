@@ -80,7 +80,7 @@ public class ChatHistoryController extends ABasicController {
         if (account == null) {
             throw new BadRequestException(ErrorCode.ACCOUNT_ERROR_NOT_FOUND, "Not found account");
         }
-        List<ChatHistory> chatHistories = chatHistoryRepository.findAllByAccountId(getCurrentUser());
+        List<ChatHistory> chatHistories = chatHistoryRepository.findAllByAccountIdOrderByCreatedDateAsc(getCurrentUser());
         ChatRequestDto req = new ChatRequestDto();
         req.setMessage(AESUtils.decrypt(keyService.getUserSecretKey(), form.getMessage(), FinanceConstant.AES_ZIP_ENABLE));
         req.setHistory(chatHistoryMapper.fromEntityListToChatHistoryFormList(chatHistories, keyService.getFinanceSecretKey()));

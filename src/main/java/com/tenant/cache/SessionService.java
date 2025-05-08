@@ -79,6 +79,30 @@ public class SessionService {
         }
     }
 
+    public Date getLastLoginByAccount(Account account) {
+        if (account == null) {
+            return null;
+        }
+
+        String keyEmp = cacheClientService.getKeyString(CacheConstant.KEY_EMPLOYEE, account.getUsername(), TenantDBContext.getCurrentTenant());
+        String keyMob = cacheClientService.getKeyString(CacheConstant.KEY_MOBILE, account.getUsername(), TenantDBContext.getCurrentTenant());
+
+        List<CacheKeyDto> dtos = cacheClientService.getMultiKeys(List.of(keyEmp, keyMob));
+        Date latestLogin = account.getLastLogin();
+
+        if (dtos != null && !dtos.isEmpty()) {
+            for (CacheKeyDto dto : dtos) {
+                if (dto != null && dto.getTime() != null) {
+                    if (latestLogin == null || dto.getTime().after(latestLogin)) {
+                        latestLogin = dto.getTime();
+                    }
+                }
+            }
+        }
+
+        return latestLogin;
+    }
+
     public void sendMessageLockAccount(Integer keyType, String username) {
         String tenantName = TenantDBContext.getCurrentTenant();
         LockAccountRequest request = new LockAccountRequest();

@@ -17,9 +17,7 @@ public class UpdateChatRoomForm {
     private Long id;
     private String name;
     private String avatar;
-
     @ValidJsonField(classType = SettingJsonFormat.class, allowNull = true)
     @ApiModelProperty(name = "settings", required = false)
     private String settings = FinanceConstant.CHAT_ROOM_SETTING_SAMPLE_DATA;
-
 }

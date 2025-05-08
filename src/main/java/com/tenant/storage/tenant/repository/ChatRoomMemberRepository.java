@@ -42,4 +42,12 @@ public interface ChatRoomMemberRepository extends JpaRepository<ChatRoomMember, 
     );
 
     ChatRoomMember findFirstByChatRoomIdAndMemberId(Long chatRoomId, Long memberId);
+
+    @Query("SELECT DISTINCT crm.member.id FROM ChatRoomMember crm WHERE crm.chatRoom.id = :chatRoomId")
+    List<Long> findAllMemberIdsByChatRoomId(@Param("chatRoomId") Long chatRoomId);
+
+    Long countAllByChatRoomId(Long chatRoomId);
+
+    @Query("SELECT DISTINCT crm.member.id FROM ChatRoomMember crm WHERE crm.chatRoom.id = :chatRoomId AND crm.member.id NOT IN :memberIds")
+    List<Long> findAllMemberIdsByChatRoomIdAndNotIn(@Param("chatRoomId") Long chatRoomId, @Param("memberIds") List<Long> memberIds);
 }

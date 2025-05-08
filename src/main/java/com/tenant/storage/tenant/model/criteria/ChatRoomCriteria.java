@@ -13,7 +13,7 @@ import javax.persistence.criteria.JoinType;
 import javax.persistence.criteria.Predicate;
 import java.util.ArrayList;
 import java.util.List;
-import com.tenant.storage.tenant.model.*;
+
 @Data
 public class ChatRoomCriteria {
     private Long id;
@@ -24,7 +24,7 @@ public class ChatRoomCriteria {
     private Integer status;
     private Integer isPaged = FinanceConstant.IS_PAGED_TRUE;
     private Long memberId;
-    private Boolean shouldSortByLastMessage = false;
+
     public Specification<ChatRoom> getCriteria() {
         return (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
@@ -51,14 +51,7 @@ public class ChatRoomCriteria {
             if (getStatus() != null) {
                 predicates.add(cb.equal(root.get("status"), getStatus()));
             }
-            if (Boolean.TRUE.equals(shouldSortByLastMessage)) {
-                Join<ChatRoom, Message> messageJoin = root.join("messages", JoinType.LEFT);
-                query.orderBy(cb.desc(cb.coalesce(
-                        cb.max(messageJoin.get("createdDate")),
-                        root.get("createdDate")
-                )));
-                query.groupBy(root.get("id"));
-            }
+            query.distinct(true);
             return cb.and(predicates.toArray(new Predicate[0]));
         };
     }

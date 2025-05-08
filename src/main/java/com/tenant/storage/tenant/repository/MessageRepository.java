@@ -34,4 +34,10 @@ public interface MessageRepository extends JpaRepository<Message, Long>, JpaSpec
     void deleteAllByChatRoomIdAndMemberId(Long chatroomId, Long memberId);
 
     Optional<Message> findFirstByIdAndChatRoomId(Long messageId, Long chatroomId);
+
+    @Query("SELECT m " +
+            "FROM Message m " +
+            "WHERE m.chatRoom.id = :chatRoomId AND m.createdDate = " +
+            "(SELECT MAX(m2.createdDate) FROM Message m2 WHERE m2.chatRoom.id = m.chatRoom.id)")
+    Message findLastMessagesByChatRoomId(@Param("chatRoomId") Long chatRoomId);
 }

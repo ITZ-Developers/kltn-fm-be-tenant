@@ -4,7 +4,7 @@ import com.tenant.dto.ApiMessageDto;
 import com.tenant.dto.ErrorCode;
 import com.tenant.exception.BadRequestException;
 import com.tenant.form.message.reaction.ReactMessageReactionForm;
-import com.tenant.mapper.MessageReactionMapper;
+import com.tenant.service.chat.ChatService;
 import com.tenant.storage.tenant.model.Account;
 import com.tenant.storage.tenant.model.ChatRoom;
 import com.tenant.storage.tenant.model.Message;
@@ -28,14 +28,14 @@ public class MessageReactionController extends ABasicController {
     @Autowired
     private AccountRepository accountRepository;
     @Autowired
-    private MessageReactionMapper messageReactionMapper;
-    @Autowired
     private MessageReactionRepository messageReactionRepository;
     @Autowired
     private MessageRepository messageRepository;
+    @Autowired
+    private ChatService chatService;
 
     @PostMapping(value = "/react", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ApiMessageDto<String> create(@Valid @RequestBody ReactMessageReactionForm form, BindingResult bindingResult) {
+    public ApiMessageDto<String> react(@Valid @RequestBody ReactMessageReactionForm form, BindingResult bindingResult) {
         Long getCurrentId = getCurrentUser();
         Account account = accountRepository.findById(getCurrentId).orElse(null);
         if (account == null) {
@@ -59,6 +59,7 @@ public class MessageReactionController extends ABasicController {
             messageReaction.setMessage(message);
             messageReactionRepository.save(messageReaction);
         }
-        return makeSuccessResponse(null, "React message reaction success");
+        chatService.broadcastMessageUpdated(chatroom.getId(), message.getId());
+        return makeSuccessResponse(null, "React message success");
     }
 }
