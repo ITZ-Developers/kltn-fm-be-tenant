@@ -45,8 +45,9 @@ public class AccountCriteria implements Serializable{
     private Long ignoreServiceGroupId;
     private Long ignoreChatRoomId;
     private Integer ignoreDirectMessageChatRoom = FinanceConstant.BOOLEAN_FALSE;
+    private Integer ignoreCurrentUser = FinanceConstant.BOOLEAN_FALSE;
     @ApiModelProperty(hidden = true)
-    private Long ignoreDirectChatRoomByUserId;
+    private Long ignoreCurrentUserId;
 
     public Specification<Account> getCriteria() {
         return new Specification<Account>() {
@@ -238,14 +239,14 @@ public class AccountCriteria implements Serializable{
                             .where(cb.equal(subRoot.get("chatRoom").get("id"), getIgnoreChatRoomId()));
                     predicates.add(cb.not(root.get("id").in(subquery)));
                 }
-                if (getIgnoreDirectChatRoomByUserId() != null && FinanceConstant.BOOLEAN_TRUE.equals(getIgnoreDirectMessageChatRoom())) {
+                if (getIgnoreCurrentUserId() != null && FinanceConstant.BOOLEAN_TRUE.equals(getIgnoreDirectMessageChatRoom())) {
                     Subquery<Long> directChatRoomIdsSubquery = query.subquery(Long.class);
                     Root<ChatRoomMember> crm1 = directChatRoomIdsSubquery.from(ChatRoomMember.class);
                     Join<ChatRoomMember, ChatRoom> joinRoom1 = crm1.join("chatRoom", JoinType.INNER);
                     directChatRoomIdsSubquery.select(joinRoom1.get("id")).where(
                             cb.and(
                                     cb.equal(joinRoom1.get("kind"), FinanceConstant.CHATROOM_KIND_DIRECT_MESSAGE),
-                                    cb.equal(crm1.get("member").get("id"), getIgnoreDirectChatRoomByUserId())
+                                    cb.equal(crm1.get("member").get("id"), getIgnoreCurrentUserId())
                             )
                     );
                     Subquery<Long> pairedAccountIdsSubquery = query.subquery(Long.class);
@@ -253,10 +254,13 @@ public class AccountCriteria implements Serializable{
                     pairedAccountIdsSubquery.select(crm2.get("member").get("id")).where(
                             cb.and(
                                     crm2.get("chatRoom").get("id").in(directChatRoomIdsSubquery),
-                                    cb.notEqual(crm2.get("member").get("id"), getIgnoreDirectChatRoomByUserId())
+                                    cb.notEqual(crm2.get("member").get("id"), getIgnoreCurrentUserId())
                             )
                     );
                     predicates.add(cb.not(root.get("id").in(pairedAccountIdsSubquery)));
+                }
+                if (getIgnoreCurrentUserId() != null && FinanceConstant.BOOLEAN_TRUE.equals(getIgnoreCurrentUser())) {
+                    predicates.add(cb.notEqual(root.get("id"), getId()));
                 }
                 if(getSortDate() != null){
                     if(getSortDate().equals(FinanceConstant.SORT_DATE_ASC)){
