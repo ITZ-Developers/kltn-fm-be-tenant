@@ -260,7 +260,7 @@ public class AccountCriteria implements Serializable{
                     predicates.add(cb.not(root.get("id").in(pairedAccountIdsSubquery)));
                 }
                 if (getIgnoreCurrentUserId() != null && FinanceConstant.BOOLEAN_TRUE.equals(getIgnoreCurrentUser())) {
-                    predicates.add(cb.notEqual(root.get("id"), getId()));
+                    predicates.add(cb.notEqual(root.get("id"), getIgnoreCurrentUserId()));
                 }
                 if(getSortDate() != null){
                     if(getSortDate().equals(FinanceConstant.SORT_DATE_ASC)){
