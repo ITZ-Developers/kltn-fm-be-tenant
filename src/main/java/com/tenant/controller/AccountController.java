@@ -121,8 +121,9 @@ public class AccountController extends ABasicController {
         if (accountCriteria.getIsPaged().equals(FinanceConstant.IS_PAGED_FALSE)) {
             pageable = PageRequest.of(0, Integer.MAX_VALUE);
         }
-        if (FinanceConstant.BOOLEAN_TRUE.equals(accountCriteria.getIgnoreDirectMessageChatRoom())) {
-            accountCriteria.setIgnoreDirectChatRoomByUserId(getCurrentUser());
+        if (FinanceConstant.BOOLEAN_TRUE.equals(accountCriteria.getIgnoreDirectMessageChatRoom())
+                || FinanceConstant.BOOLEAN_TRUE.equals(accountCriteria.getIgnoreCurrentUser())) {
+            accountCriteria.setIgnoreCurrentUserId(getCurrentUser());
         }
         Page<Account> accounts = accountRepository.findAll(accountCriteria.getCriteria(), pageable);
         ResponseListDto<List<AccountAdminDto>> responseListObj = new ResponseListDto<>();
@@ -136,8 +137,9 @@ public class AccountController extends ABasicController {
 
     @GetMapping(value = "/auto-complete", produces = MediaType.APPLICATION_JSON_VALUE)
     public ApiMessageDto<ResponseListDto<List<AccountDto>>> autoComplete(AccountCriteria accountCriteria) {
-        if (FinanceConstant.BOOLEAN_TRUE.equals(accountCriteria.getIgnoreDirectMessageChatRoom())) {
-            accountCriteria.setIgnoreDirectChatRoomByUserId(getCurrentUser());
+        if (FinanceConstant.BOOLEAN_TRUE.equals(accountCriteria.getIgnoreDirectMessageChatRoom())
+                || FinanceConstant.BOOLEAN_TRUE.equals(accountCriteria.getIgnoreCurrentUser())) {
+            accountCriteria.setIgnoreCurrentUserId(getCurrentUser());
         }
         Pageable pageable = accountCriteria.getIsPaged().equals(FinanceConstant.IS_PAGED_TRUE) ? PageRequest.of(0, 10) : PageRequest.of(0, Integer.MAX_VALUE);
         accountCriteria.setStatus(FinanceConstant.STATUS_ACTIVE);
