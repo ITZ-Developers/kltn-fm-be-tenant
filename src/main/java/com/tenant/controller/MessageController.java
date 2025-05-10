@@ -140,7 +140,7 @@ public class MessageController extends ABasicController {
         if (!StringUtils.isNotBlank(form.getContent()) && !StringUtils.isNotBlank(form.getDocument())) {
             throw new BadRequestException("Required content or document");
         }
-        Message message = messageMapper.fromCreateMessageFormToEncryptEntity(form, keyService.getFinanceSecretKey());
+        Message message = messageMapper.fromCreateMessageFormToEncryptEntity(form, keyService.getUserKeyWrapper());
         Long currentId = getCurrentUser();
         Account sender = accountRepository.findById(currentId).orElse(null);
         if (sender == null) {
@@ -182,7 +182,7 @@ public class MessageController extends ABasicController {
         if (message == null) {
             throw new BadRequestException(ErrorCode.MESSAGE_ERROR_NOT_FOUND, "Not found message");
         }
-        messageMapper.fromUpdateMessageFormToEncryptEntity(form, message, keyService.getFinanceSecretKey());
+        messageMapper.fromUpdateMessageFormToEncryptEntity(form, message, keyService.getUserKeyWrapper());
         Long currentId = getCurrentUser();
         ChatRoom chatroom = message.getChatRoom();
         boolean isMemberOfChatRoom = checkIsMemberOfChatRoom(currentId, message.getChatRoom().getId());

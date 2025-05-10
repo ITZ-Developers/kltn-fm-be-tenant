@@ -16,15 +16,15 @@ import java.util.List;
         unmappedTargetPolicy = ReportingPolicy.IGNORE,
         nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
 public interface MessageMapper extends EncryptDecryptMapper {
-    @Mapping(target = "content", expression = "java(encrypt(secretKey, form.getContent()))")
-    @Mapping(target = "document", expression = "java(encrypt(secretKey, form.getDocument()))")
+    @Mapping(target = "content", expression = "java(decryptAndEncrypt(keyWrapper, form.getContent()))")
+    @Mapping(target = "document", expression = "java(decryptAndEncrypt(keyWrapper, form.getDocument()))")
     @BeanMapping(ignoreByDefault = true)
-    Message fromCreateMessageFormToEncryptEntity(CreateMessageForm form,  @Context String secretKey);
+    Message fromCreateMessageFormToEncryptEntity(CreateMessageForm form, @Context KeyWrapperDto keyWrapper);
 
-    @Mapping(target = "content", expression = "java(encrypt(secretKey, form.getContent()))")
-    @Mapping(target = "document", expression = "java(encrypt(secretKey, form.getDocument()))")
+    @Mapping(target = "content", expression = "java(decryptAndEncrypt(keyWrapper, form.getContent()))")
+    @Mapping(target = "document", expression = "java(decryptAndEncrypt(keyWrapper, form.getDocument()))")
     @BeanMapping(ignoreByDefault = true)
-    void fromUpdateMessageFormToEncryptEntity(UpdateMessageForm form, @MappingTarget Message message, @Context String secretKey);
+    void fromUpdateMessageFormToEncryptEntity(UpdateMessageForm form, @MappingTarget Message message, @Context KeyWrapperDto keyWrapper);
 
     @Mapping(source = "id", target = "id")
     @Mapping(source = "sender", target = "sender", qualifiedByName = "fromEntityToAccountDtoAutoComplete")
