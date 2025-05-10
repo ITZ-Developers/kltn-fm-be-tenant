@@ -24,5 +24,4 @@ public class ChatHistory extends Auditable<String> {
     @ManyToOne
     @JoinColumn(name = "account_id")
     private Account account;
-    private Integer ordering;
 }
