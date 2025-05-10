@@ -10,10 +10,8 @@ import javax.validation.constraints.NotNull;
 public class CreateMessageForm {
     @NotNull(message = "chatroomId cannot be null")
     @ApiModelProperty(required = true)
-    private Long chatroomId;
+    private Long chatRoomId;
     private String content;
     private String document;
-    @NotNull(message = "parent cannot be blank")
-    @ApiModelProperty(required = true)
     private Long parentMessageId;
 }

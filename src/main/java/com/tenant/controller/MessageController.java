@@ -142,13 +142,13 @@ public class MessageController extends ABasicController {
         if (sender == null) {
             throw new BadRequestException(ErrorCode.ACCOUNT_ERROR_NOT_FOUND, "Not found sender");
         }
-        ChatRoom chatRoom = chatroomRepository.findById(form.getChatroomId()).orElse(null);
+        ChatRoom chatRoom = chatroomRepository.findById(form.getChatRoomId()).orElse(null);
         if (chatRoom == null) {
             throw new BadRequestException(ErrorCode.CHAT_ROOM_ERROR_NOT_FOUND, "Not found chatRoom");
         }
         boolean isMemberOfChatRoom = checkIsMemberOfChatRoom(currentId, chatRoom.getId());
         boolean isOwnerOfChatRoom = checkOwnerChatRoom(currentId, chatRoom.getId());
-        boolean allowSendMessages = Boolean.valueOf(JSONUtils.getDataByKey(chatRoom.getSettings(), FinanceConstant.CHAT_ROOM_SETTING_ALLOW_SEND_MESSAGES));
+        boolean allowSendMessages = Boolean.parseBoolean(JSONUtils.getDataByKey(chatRoom.getSettings(), FinanceConstant.CHAT_ROOM_SETTING_ALLOW_SEND_MESSAGES));
         if (!isMemberOfChatRoom) {
             throw new BadRequestException(ErrorCode.CHAT_ROOM_MEMBER_ERROR_NO_JOIN, "Account no in this room");
         }
@@ -183,7 +183,7 @@ public class MessageController extends ABasicController {
         ChatRoom chatroom = message.getChatRoom();
         boolean isMemberOfChatRoom = checkIsMemberOfChatRoom(currentId, message.getChatRoom().getId());
         boolean isOwnerOfChatRoom = checkOwnerChatRoom(currentId, chatroom.getId());
-        boolean allowSendMessages = Boolean.valueOf(JSONUtils.getDataByKey(chatroom.getSettings(), FinanceConstant.CHAT_ROOM_SETTING_ALLOW_SEND_MESSAGES));
+        boolean allowSendMessages = Boolean.parseBoolean(JSONUtils.getDataByKey(chatroom.getSettings(), FinanceConstant.CHAT_ROOM_SETTING_ALLOW_SEND_MESSAGES));
         if (!isMemberOfChatRoom) {
             throw new BadRequestException(ErrorCode.CHAT_ROOM_MEMBER_ERROR_NO_JOIN, "Account no in this room");
         }
