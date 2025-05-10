@@ -7,15 +7,12 @@ import com.tenant.dto.chatroom.OtherMemberInfoInterface;
 import com.tenant.storage.tenant.model.*;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
-import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.*;
 
 public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long>, JpaSpecificationExecutor<ChatRoom> {
-    @Query("SELECT COUNT(c) > 0 FROM ChatRoom c WHERE c.id = :chatroomId AND c.owner.id = :accountId")
-    @Modifying
     boolean existsByIdAndOwnerId(@Param("chatroomId") Long chatroomId, @Param("accountId") Long accountId);
 
     @Query("SELECT cr.id as chatRoomId, COUNT(crm.id) as memberCount " +
