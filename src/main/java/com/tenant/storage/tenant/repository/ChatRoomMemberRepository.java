@@ -16,6 +16,7 @@ public interface ChatRoomMemberRepository extends JpaRepository<ChatRoomMember, 
     void deleteAllByChatRoomId(Long id);
     boolean existsByChatRoomIdAndMemberId(Long chatroomId, Long memberId);
 
+    @Transactional
     @Modifying
     @Query("UPDATE ChatRoomMember crm " +
             "SET crm.lastReadMessage = NULL " +
