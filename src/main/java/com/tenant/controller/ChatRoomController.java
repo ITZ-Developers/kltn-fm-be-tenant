@@ -27,13 +27,11 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.MediaType;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -110,22 +108,23 @@ public class ChatRoomController extends ABasicController {
         Map<Long, Long> unreadCountMap = chatroomRepository.countUnreadMessages(chatRoomIds, currentUserId)
                 .stream()
                 .collect(Collectors.toMap(ChatRoomUnreadCountInterface::getChatRoomId, ChatRoomUnreadCountInterface::getUnreadCount));
-        Map<Long, OtherMemberInfoInterface> otherMemberMap = chatroomRepository.findOtherMembersInDirectMessages(chatRoomIds, currentUserId, FinanceConstant.CHATROOM_KIND_DIRECT_MESSAGE)
-                .stream()
+        List<Object[]> rawResults = chatroomRepository.findChatRoomAccounts(chatRoomIds, currentUserId, FinanceConstant.CHATROOM_KIND_DIRECT_MESSAGE);
+        Map<Long, Account> chatRoomAccountMap = rawResults.stream()
                 .collect(Collectors.toMap(
-                        OtherMemberInfoInterface::getChatRoomId,
-                        Function.identity()));
+                        row -> (Long) row[0],
+                        row -> (Account) row[1]
+                ));
 
-        // sort giảm dần theo createdDate (mới nhất lên đầu)
         List<ChatRoomDto> dtos = chatRooms.stream().map(chatRoom -> {
             ChatRoomDto dto = chatRoomMapper.fromEntityToChatRoomDto(chatRoom);
             dto.setTotalMembers(memberCountMap.getOrDefault(chatRoom.getId(), 0L));
             if (Objects.equals(chatRoom.getKind(), FinanceConstant.CHATROOM_KIND_DIRECT_MESSAGE)) {
                 dto.setOwner(null);
-                OtherMemberInfoInterface otherMember = otherMemberMap.get(chatRoom.getId());
+                Account otherMember = chatRoomAccountMap.get(chatRoom.getId());
                 if (otherMember != null) {
                     dto.setName(otherMember.getFullName());
-                    dto.setAvatar(otherMember.getAvatar());
+                    dto.setAvatar(otherMember.getAvatarPath());
+                    dto.setLastLogin(sessionService.getLastLoginByAccount(otherMember));
                 }
             }
             Message lastMessage = lastMessageMap.get(chatRoom.getId());

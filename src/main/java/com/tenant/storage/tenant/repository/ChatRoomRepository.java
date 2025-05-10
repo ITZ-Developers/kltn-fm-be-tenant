@@ -38,7 +38,7 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long>, JpaSp
     List<ChatRoomUnreadCountInterface> countUnreadMessages(@Param("chatRoomIds") List<Long> chatRoomIds,
                                                            @Param("userId") Long userId);
 
-    @Query("SELECT crm.chatRoom.id as chatRoomId, a.fullName as fullName, a.avatarPath as avatar " +
+    @Query("SELECT crm.chatRoom.id as chatRoomId, a.id as memberId, a.fullName as fullName, a.avatarPath as avatar " +
             "FROM ChatRoomMember crm JOIN crm.member a " +
             "WHERE crm.chatRoom.id IN :chatRoomIds " +
             "AND crm.member.id != :currentUserId " +
@@ -62,6 +62,16 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long>, JpaSp
             "AND crm.chatRoom.kind = :directMessageKind")
     Account findOtherMemberInDirectMessages(
             @Param("chatRoomId") Long chatRoomId,
+            @Param("currentUserId") Long currentUserId,
+            @Param("directMessageKind") Integer directMessageKind);
+
+    @Query("SELECT crm.chatRoom.id, a FROM ChatRoomMember crm " +
+            "JOIN crm.member a " +
+            "WHERE crm.chatRoom.id IN :chatRoomIds " +
+            "AND crm.member.id != :currentUserId " +
+            "AND crm.chatRoom.kind = :directMessageKind")
+    List<Object[]> findChatRoomAccounts(
+            @Param("chatRoomIds") List<Long> chatRoomIds,
             @Param("currentUserId") Long currentUserId,
             @Param("directMessageKind") Integer directMessageKind);
 }
