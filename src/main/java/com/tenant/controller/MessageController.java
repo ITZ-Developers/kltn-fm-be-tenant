@@ -127,10 +127,12 @@ public class MessageController extends ABasicController {
         // Update last message for member
         ChatRoomMember chatRoomMember = chatRoomMemberRepository.findFirstByChatRoomIdAndMemberId(chatRoom.getId(), currentId);
         Message lastMessage = messageRepository.findLastMessageByChatRoomId(chatRoom.getId());
-        if (chatRoomMember.getLastReadMessage() == null || lastMessage.getCreatedDate().after(chatRoomMember.getLastReadMessage().getCreatedDate())) {
-            chatRoomMember.setLastReadMessage(lastMessage);
-            chatRoomMemberRepository.save(chatRoomMember);
-            chatService.broadcastMessageUpdated(chatRoom.getId(), lastMessage.getId());
+        if (lastMessage != null) {
+            if (chatRoomMember.getLastReadMessage() == null || lastMessage.getCreatedDate().after(chatRoomMember.getLastReadMessage().getCreatedDate())) {
+                chatRoomMember.setLastReadMessage(lastMessage);
+                chatRoomMemberRepository.save(chatRoomMember);
+                chatService.broadcastMessageUpdated(chatRoom.getId(), lastMessage.getId());
+            }
         }
         return makeSuccessResponse(responseListObj, "Get list message success");
     }
