@@ -4,8 +4,6 @@ import com.tenant.constant.FinanceConstant;
 import com.tenant.dto.ApiMessageDto;
 import com.tenant.dto.ErrorCode;
 import com.tenant.dto.ResponseListDto;
-import com.tenant.dto.chatroom.ChatRoomDto;
-import com.tenant.dto.chatroom.OtherMemberInfoInterface;
 import com.tenant.dto.message.MessageDto;
 import com.tenant.exception.BadRequestException;
 import com.tenant.form.message.CreateMessageForm;
@@ -13,11 +11,11 @@ import com.tenant.form.message.UpdateMessageForm;
 import com.tenant.mapper.AccountMapper;
 import com.tenant.mapper.MessageMapper;
 import com.tenant.service.KeyService;
+import com.tenant.service.MessageService;
 import com.tenant.service.chat.ChatService;
 import com.tenant.storage.tenant.model.*;
 import com.tenant.storage.tenant.model.criteria.MessageCriteria;
 import com.tenant.storage.tenant.repository.*;
-import com.tenant.utils.JSONUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,6 +54,8 @@ public class MessageController extends ABasicController {
     private ChatService chatService;
     @Autowired
     private AccountMapper accountMapper;
+    @Autowired
+    private MessageService messageService;
 
     private MessageDto getFormattedMessageDto(Message message) {
         Long currentId = getCurrentUser();
@@ -152,11 +152,11 @@ public class MessageController extends ABasicController {
         }
         boolean isMemberOfChatRoom = checkIsMemberOfChatRoom(currentId, chatRoom.getId());
         boolean isOwnerOfChatRoom = checkOwnerChatRoom(currentId, chatRoom.getId());
-        boolean allowSendMessages = Boolean.parseBoolean(JSONUtils.getDataByKey(chatRoom.getSettings(), FinanceConstant.CHAT_ROOM_SETTING_ALLOW_SEND_MESSAGES));
+        boolean allowSendMessages = messageService.getSettingOfChatRoom(chatRoom.getSettings()).getMember_permissions().getAllow_send_messages();
         if (!isMemberOfChatRoom) {
             throw new BadRequestException(ErrorCode.CHAT_ROOM_MEMBER_ERROR_NO_JOIN, "Account no in this room");
         }
-        if (!isOwnerOfChatRoom && !allowSendMessages) {
+        if (FinanceConstant.CHATROOM_KIND_GROUP.equals(chatRoom.getKind()) && !isOwnerOfChatRoom && !allowSendMessages) {
             throw new BadRequestException(ErrorCode.CHAT_ROOM_MEMBER_ERROR_IS_NOT_SEND_MESSAGES, "Members unable to send message");
         }
         if (form.getParentMessageId() != null) {
@@ -187,14 +187,14 @@ public class MessageController extends ABasicController {
         ChatRoom chatroom = message.getChatRoom();
         boolean isMemberOfChatRoom = checkIsMemberOfChatRoom(currentId, message.getChatRoom().getId());
         boolean isOwnerOfChatRoom = checkOwnerChatRoom(currentId, chatroom.getId());
-        boolean allowSendMessages = Boolean.parseBoolean(JSONUtils.getDataByKey(chatroom.getSettings(), FinanceConstant.CHAT_ROOM_SETTING_ALLOW_SEND_MESSAGES));
+        boolean allowSendMessages = messageService.getSettingOfChatRoom(chatroom.getSettings()).getMember_permissions().getAllow_send_messages();
         if (!isMemberOfChatRoom) {
             throw new BadRequestException(ErrorCode.CHAT_ROOM_MEMBER_ERROR_NO_JOIN, "Account no in this room");
         }
         if (!Objects.equals(message.getSender().getId(), getCurrentUser())) {
             throw new BadRequestException(ErrorCode.MESSAGE_ERROR_NO_OWNER, "Not found message");
         }
-        if (!isOwnerOfChatRoom && !allowSendMessages) {
+        if (FinanceConstant.CHATROOM_KIND_GROUP.equals(chatroom.getKind()) && !isOwnerOfChatRoom && !allowSendMessages) {
             throw new BadRequestException(ErrorCode.CHAT_ROOM_MEMBER_ERROR_IS_NOT_SEND_MESSAGES, "Members unable to update message");
         }
         if (!checkIsMemberOfChatRoom(getCurrentUser(), message.getChatRoom().getId())) {
