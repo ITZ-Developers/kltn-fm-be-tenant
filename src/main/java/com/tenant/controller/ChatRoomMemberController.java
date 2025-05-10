@@ -89,7 +89,7 @@ public class ChatRoomMemberController extends ABasicController {
             throw new BadRequestException(ErrorCode.CHAT_ROOM_ERROR_NOT_KIND_GROUP, "Chat room kind is not kind group");
         }
         boolean isOwnerOfChatRoom = checkOwnerChatRoom(getCurrentUser(), chatroom.getId());
-        boolean allowNotOwnerCanInvite = Boolean.parseBoolean(JSONUtils.getDataByKey(chatroom.getSettings(), FinanceConstant.CHAT_ROOM_SETTING_ALLOW_INVITE_MEMBERS));
+        boolean allowNotOwnerCanInvite = messageService.getSettingOfChatRoom(chatroom.getSettings()).getMember_permissions().getAllow_invite_members();
         boolean isMemberOfChatRoom = checkIsMemberOfChatRoom(getCurrentUser(), chatroom.getId());
         if (!isMemberOfChatRoom) {
             throw new BadRequestException(ErrorCode.CHAT_ROOM_MEMBER_ERROR_NO_JOIN, "Current user is not member of group");

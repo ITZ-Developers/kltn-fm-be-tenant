@@ -13,6 +13,7 @@ import com.tenant.form.chatroom.UpdateChatRoomForm;
 import com.tenant.mapper.ChatRoomMapper;
 import com.tenant.mapper.MessageMapper;
 import com.tenant.service.KeyService;
+import com.tenant.service.MessageService;
 import com.tenant.service.chat.ChatService;
 import com.tenant.storage.tenant.model.*;
 import com.tenant.storage.tenant.model.Account;
@@ -59,6 +60,8 @@ public class ChatRoomController extends ABasicController {
     private ChatService chatService;
     @Autowired
     private SessionService sessionService;
+    @Autowired
+    private MessageService messageService;
 
     @GetMapping(value = "/get/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ApiMessageDto<ChatRoomDto> get(@PathVariable("id") Long id) {
@@ -237,7 +240,7 @@ public class ChatRoomController extends ABasicController {
         if (FinanceConstant.CHATROOM_KIND_DIRECT_MESSAGE.equals(chatroom.getKind())) {
             throw new BadRequestException(ErrorCode.CHAT_ROOM_ERROR_DIRECT_MESSAGE_NOT_UPDATE, "chat room direct can not update");
         }
-        boolean allowNotOwnerCanUpdate = Boolean.parseBoolean(JSONUtils.getDataByKey(chatroom.getSettings(), FinanceConstant.CHAT_ROOM_SETTING_ALLOW_UPDATE));
+        boolean allowNotOwnerCanUpdate = messageService.getSettingOfChatRoom(chatroom.getSettings()).getMember_permissions().getAllow_update_chat_room();
         boolean checkIsOwner = checkOwnerChatRoom(getCurrentUser(), chatroom.getId());
         if (!checkIsOwner && !allowNotOwnerCanUpdate) {
             throw new BadRequestException(ErrorCode.CHAT_ROOM_MEMBER_ERROR_IS_NOT_OWNER_AND_NOT_ALLOW_UPDATE, "Chat room updated by owner or not owner if allow to update");
