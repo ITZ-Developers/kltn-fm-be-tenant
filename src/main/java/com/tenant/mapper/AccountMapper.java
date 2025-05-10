@@ -102,6 +102,7 @@ public interface AccountMapper {
     @Mapping(source = "id", target = "id")
     @Mapping(source = "username", target = "username")
     @Mapping(source = "fullName", target = "fullName")
+    @Mapping(source = "avatarPath", target = "avatarPath")
     @BeanMapping(ignoreByDefault = true)
     @Named("fromEntityToAccountDtoAutoComplete")
     AccountDto fromEntityToAccountDtoAutoComplete(Account account);
