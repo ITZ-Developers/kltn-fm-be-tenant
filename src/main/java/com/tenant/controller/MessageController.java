@@ -106,8 +106,12 @@ public class MessageController extends ABasicController {
         if (messageCriteria.getChatRoomId() == null) {
             throw new BadRequestException("Required chatroomId");
         }
+        ChatRoom chatRoom = chatroomRepository.findById(messageCriteria.getChatRoomId()).orElse(null);
+        if (chatRoom == null) {
+            throw new BadRequestException("Chat room not found");
+        }
         Long currentId = getCurrentUser();
-        boolean isMemberOfChatRoom = checkIsMemberOfChatRoom(currentId, messageCriteria.getChatRoomId());
+        boolean isMemberOfChatRoom = checkIsMemberOfChatRoom(currentId, chatRoom.getId());
         if (!isMemberOfChatRoom) {
             throw new BadRequestException(ErrorCode.CHAT_ROOM_MEMBER_ERROR_NO_JOIN, "Account no in this room");
         }
@@ -121,12 +125,12 @@ public class MessageController extends ABasicController {
         responseListObj.setTotalElements(listMessage.getTotalElements());
 
         // Update last message for member
-        ChatRoomMember chatRoomMember = chatRoomMemberRepository.findFirstByChatRoomIdAndMemberId(messageCriteria.getChatRoomId(), currentId);
-        Message lastMessage = messageRepository.findLastMessageByChatRoomId(messageCriteria.getChatRoomId());
+        ChatRoomMember chatRoomMember = chatRoomMemberRepository.findFirstByChatRoomIdAndMemberId(chatRoom.getId(), currentId);
+        Message lastMessage = messageRepository.findLastMessageByChatRoomId(chatRoom.getId());
         if (chatRoomMember.getLastReadMessage() == null || lastMessage.getCreatedDate().after(chatRoomMember.getLastReadMessage().getCreatedDate())) {
             chatRoomMember.setLastReadMessage(lastMessage);
             chatRoomMemberRepository.save(chatRoomMember);
-            chatService.broadcastMessageUpdated(chatRoomMember.getChatRoom().getId(), lastMessage.getId());
+            chatService.broadcastMessageUpdated(chatRoom.getId(), lastMessage.getId());
         }
         return makeSuccessResponse(responseListObj, "Get list message success");
     }
