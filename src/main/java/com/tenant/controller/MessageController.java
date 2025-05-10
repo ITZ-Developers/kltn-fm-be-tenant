@@ -81,12 +81,11 @@ public class MessageController extends ABasicController {
         }
         Long currentId = getCurrentUser();
         ChatRoom chatRoom = message.getChatRoom();
-        boolean isMemberOfChatRoom = checkIsMemberOfChatRoom(currentId, chatRoom.getId());
-        if (!isMemberOfChatRoom) {
+        ChatRoomMember chatRoomMember = chatRoomMemberRepository.findFirstByChatRoomIdAndMemberId(chatRoom.getId(), currentId).orElse(null);
+        if (chatRoomMember == null) {
             throw new BadRequestException(ErrorCode.CHAT_ROOM_MEMBER_ERROR_NO_JOIN, "Account no in this room");
         }
         MessageDto dto = getFormattedMessageDto(message);
-        ChatRoomMember chatRoomMember = chatRoomMemberRepository.findFirstByChatRoomIdAndMemberId(chatRoom.getId(), currentId);
         if (chatRoomMember.getLastReadMessage() == null || message.getCreatedDate().after(chatRoomMember.getLastReadMessage().getCreatedDate())) {
             chatRoomMember.setLastReadMessage(message);
             chatRoomMemberRepository.save(chatRoomMember);
@@ -111,9 +110,9 @@ public class MessageController extends ABasicController {
             throw new BadRequestException("Chat room not found");
         }
         Long currentId = getCurrentUser();
-        boolean isMemberOfChatRoom = checkIsMemberOfChatRoom(currentId, chatRoom.getId());
-        if (!isMemberOfChatRoom) {
-            throw new BadRequestException(ErrorCode.CHAT_ROOM_MEMBER_ERROR_NO_JOIN, "Account no in this room");
+        ChatRoomMember chatRoomMember = chatRoomMemberRepository.findFirstByChatRoomIdAndMemberId(chatRoom.getId(), currentId).orElse(null);
+        if (chatRoomMember == null) {
+            throw new BadRequestException(ErrorCode.CHAT_ROOM_MEMBER_ERROR_NO_JOIN, "Account is not in this room");
         }
         Page<Message> listMessage = messageRepository.findAll(messageCriteria.getCriteria(), pageable);
         ResponseListDto<List<MessageDto>> responseListObj = new ResponseListDto<>();
@@ -125,7 +124,6 @@ public class MessageController extends ABasicController {
         responseListObj.setTotalElements(listMessage.getTotalElements());
 
         // Update last message for member
-        ChatRoomMember chatRoomMember = chatRoomMemberRepository.findFirstByChatRoomIdAndMemberId(chatRoom.getId(), currentId);
         Message lastMessage = messageRepository.findLastMessageByChatRoomId(chatRoom.getId());
         if (lastMessage != null) {
             if (chatRoomMember.getLastReadMessage() == null || lastMessage.getCreatedDate().after(chatRoomMember.getLastReadMessage().getCreatedDate())) {

@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface ChatRoomMemberRepository extends JpaRepository<ChatRoomMember, Long>, JpaSpecificationExecutor<ChatRoomMember> {
     List<ChatRoomMember> findAllByChatRoomId(Long chatRoomId);
@@ -42,7 +43,7 @@ public interface ChatRoomMemberRepository extends JpaRepository<ChatRoomMember, 
             @Param("chatRoomId") Long chatRoomId
     );
 
-    ChatRoomMember findFirstByChatRoomIdAndMemberId(Long chatRoomId, Long memberId);
+    Optional<ChatRoomMember> findFirstByChatRoomIdAndMemberId(Long chatRoomId, Long memberId);
 
     @Query("SELECT DISTINCT crm.member.id FROM ChatRoomMember crm WHERE crm.chatRoom.id = :chatRoomId")
     List<Long> findAllMemberIdsByChatRoomId(@Param("chatRoomId") Long chatRoomId);
