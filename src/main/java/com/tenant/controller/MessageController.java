@@ -103,7 +103,7 @@ public class MessageController extends ABasicController {
         } else if (pageable.getSort().isUnsorted()) {
             pageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by(Sort.Order.desc("createdDate")));
         }
-        if (messageCriteria.getChatRoomId() != null) {
+        if (messageCriteria.getChatRoomId() == null) {
             throw new BadRequestException("Required chatroomId");
         }
         Long currentId = getCurrentUser();
