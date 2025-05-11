@@ -232,5 +232,4 @@ public class MessageController extends ABasicController {
         chatService.broadcastMessageUpdated(chatroom.getId(), message.getId());
         return makeSuccessResponse(null, "Delete message success");
     }
-
 }
