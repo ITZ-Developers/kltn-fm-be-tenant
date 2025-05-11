@@ -214,8 +214,11 @@ public class MessageController extends ABasicController {
         if (message == null) {
             throw new BadRequestException(ErrorCode.MESSAGE_ERROR_NOT_FOUND, "Not found message");
         }
+        if (message.getIsDeleted()) {
+            throw new BadRequestException(ErrorCode.MESSAGE_ERROR_DELETED, "Message already deleted");
+        }
         Long currentId = getCurrentUser();
-        ChatRoom chatroom = new ChatRoom();
+        ChatRoom chatroom = message.getChatRoom();
         boolean isMemberOfChatRoom = checkIsMemberOfChatRoom(currentId, message.getChatRoom().getId());
         boolean isOwnerOfChatRoom = checkOwnerChatRoom(currentId, chatroom.getId());
         if (!isMemberOfChatRoom) {
