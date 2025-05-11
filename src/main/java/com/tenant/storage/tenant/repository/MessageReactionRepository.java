@@ -11,13 +11,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Optional;
 
 public interface MessageReactionRepository extends JpaRepository<MessageReaction, Long>, JpaSpecificationExecutor<MessageReaction> {
-
-    @Transactional
-    @Modifying
-    @Query("DELETE FROM MessageReaction mr " +
-            "WHERE mr.account.id = :accountId AND mr.message.id = :messageId ")
-    void deleteAllByAccountIdAndMessageId(@Param("accountId") Long accountId, @Param("messageId") Long messageId);
-
     @Transactional
     void deleteAllByMessageId(Long messageId);
 
@@ -32,4 +25,7 @@ public interface MessageReactionRepository extends JpaRepository<MessageReaction
     void deleteAllByChatRoomIdAndMemberId(@Param("chatRoomId") Long chatRoomId, @Param("memberId")Long memberId);
 
     Optional<MessageReaction> findFirstByMessageIdAndAccountId(Long messageId, Long accountId);
+
+    @Transactional
+    void deleteAllByAccountIdAndMessageId(Long accountId, Long messageId);
 }

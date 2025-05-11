@@ -46,20 +46,32 @@ public class MessageReactionController extends ABasicController {
             throw new BadRequestException(ErrorCode.MESSAGE_ERROR_NOT_FOUND, "Not found message");
         }
         ChatRoom chatroom = message.getChatRoom();
-        Boolean isMemberOfChatRoom = checkIsMemberOfChatRoom(getCurrentId, chatroom.getId());
+        boolean isMemberOfChatRoom = checkIsMemberOfChatRoom(getCurrentId, chatroom.getId());
         if (!isMemberOfChatRoom) {
             throw new BadRequestException(ErrorCode.CHAT_ROOM_MEMBER_ERROR_NO_JOIN, "Current user is not member of chatroom");
         }
-        MessageReaction existMessageReaction = messageReactionRepository.findFirstByMessageIdAndAccountId(message.getId(), getCurrentId).orElse(null);
-        if (existMessageReaction != null) {
-            messageReactionRepository.delete(existMessageReaction);
-        } else {
-            MessageReaction messageReaction = new MessageReaction();
-            messageReaction.setAccount(account);
-            messageReaction.setMessage(message);
-            messageReactionRepository.save(messageReaction);
-        }
+        messageReactionRepository.deleteAllByAccountIdAndMessageId(account.getId(), message.getId());
+        MessageReaction messageReaction = new MessageReaction();
+        messageReaction.setAccount(account);
+        messageReaction.setKind(form.getKind());
+        messageReaction.setMessage(message);
+        messageReactionRepository.save(messageReaction);
         chatService.broadcastMessageUpdated(chatroom.getId(), message.getId());
         return makeSuccessResponse(null, "React message success");
+    }
+
+    @DeleteMapping(value = "/delete/{mesageId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ApiMessageDto<String> delete(@PathVariable("mesageId") Long mesageId) {
+        Message message = messageRepository.findById(mesageId).orElse(null);
+        if (message == null) {
+            throw new BadRequestException(ErrorCode.MESSAGE_ERROR_NOT_FOUND, "Not found message");
+        }
+        Account account = accountRepository.findById(getCurrentUser()).orElse(null);
+        if (account == null) {
+            throw new BadRequestException(ErrorCode.ACCOUNT_ERROR_NOT_FOUND, "Not found account");
+        }
+        messageReactionRepository.deleteAllByAccountIdAndMessageId(account.getId(), message.getId());
+        chatService.broadcastMessageUpdated(message.getChatRoom().getId(), message.getId());
+        return makeSuccessResponse(null, "Delete message reaction success");
     }
 }
