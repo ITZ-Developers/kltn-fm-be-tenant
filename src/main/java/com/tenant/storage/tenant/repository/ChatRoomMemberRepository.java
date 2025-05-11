@@ -32,6 +32,7 @@ public interface ChatRoomMemberRepository extends JpaRepository<ChatRoomMember, 
     void updateLastMessageNullByMessageId(@Param("messageId") Long messageId);
 
     @Transactional
+    @Modifying
     void deleteByChatRoomIdAndMemberId(Long chatroomId, Long memberId);
 
     @Query("SELECT CASE WHEN COUNT(m) > 0 THEN TRUE ELSE FALSE END " +

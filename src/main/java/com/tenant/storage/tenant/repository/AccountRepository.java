@@ -45,4 +45,7 @@ public interface AccountRepository extends JpaRepository<Account, Long>, JpaSpec
                                                            @Param("status") Integer status,
                                                            @Param("chatRoomId") Long chatRoomId);
 
+    List<Account> findAllByIdInAndStatusAndIdNot(List<Long> accountIds, Integer status, Long currentUserId);
+
+    Optional<Account> findFirstByIdAndStatusAndIdNot(Long id, Integer status, Long currentUserId);
 }
