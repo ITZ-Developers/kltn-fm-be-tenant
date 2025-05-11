@@ -252,6 +252,7 @@ public class ErrorCode {
     public static final String MESSAGE_ERROR_NOT_FOUND = "ERROR-MESSAGE-0000";
     public static final String MESSAGE_ERROR_NO_OWNER = "ERROR-MESSAGE-0001";
     public static final String MESSAGE_REACTION_ERROR_REACTED = "ERROR-MESSAGE-0002";
+    public static final String MESSAGE_ERROR_DELETED = "ERROR-MESSAGE-0003";
 
     /**
      * Starting error code Chat History
