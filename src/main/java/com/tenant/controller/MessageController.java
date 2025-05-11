@@ -202,6 +202,7 @@ public class MessageController extends ABasicController {
         }
         message.setDocument(form.getDocument());
         message.setContent(form.getContent());
+        message.setIsUpdate(true);
         messageRepository.save(message);
         chatService.broadcastMessageUpdated(chatroom.getId(), message.getId());
         return makeSuccessResponse(null, "Update message success");

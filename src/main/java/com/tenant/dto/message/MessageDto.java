@@ -20,4 +20,6 @@ public class MessageDto extends ABasicAdminDto {
     private Long totalSeenMembers;
     private Integer myReaction;
     private List<AccountDto> seenMembers;
+    private Boolean isDeleted;
+    private Boolean isUpdated;
 }
