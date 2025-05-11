@@ -80,6 +80,10 @@ public class ChatRoomMemberController extends ABasicController {
 
     @PostMapping(value = "/create", produces = MediaType.APPLICATION_JSON_VALUE)
     public ApiMessageDto<String> create(@Valid @RequestBody CreateChatRoomMemberForm form, BindingResult bindingResult) {
+        Account currentUser = accountRepository.findById(getCurrentUser()).orElse(null);
+        if (currentUser == null) {
+            throw new BadRequestException(ErrorCode.ACCOUNT_ERROR_NOT_FOUND, "Not found current user");
+        }
         List<ChatRoomMember> chatRoomMembers = new ArrayList<>();
         ChatRoom chatroom = chatroomRepository.findById(form.getRoomId()).orElse(null);
         if (chatroom == null) {
@@ -97,7 +101,7 @@ public class ChatRoomMemberController extends ABasicController {
         if (!allowNotOwnerCanInvite && !isOwnerOfChatRoom) {
             throw new BadRequestException(ErrorCode.CHAT_ROOM_ERROR_UNABLE_INVITE_NEW_MEMBERS, "Owner allow add new member");
         }
-        List<Account> accounts = accountRepository.findAllByIdInAndStatus(form.getMemberIds(), FinanceConstant.STATUS_ACTIVE);
+        List<Account> accounts = accountRepository.findAllByIdInAndStatusAndIdNot(form.getMemberIds(), FinanceConstant.STATUS_ACTIVE, currentUser.getId());
         if (accounts.isEmpty()) {
             throw new BadRequestException(ErrorCode.CHAT_ROOM_MEMBER_ERROR_NEW_CHAT_ROOM_MEMBERS_EMPTY, "New members is empty");
         }
@@ -135,10 +139,10 @@ public class ChatRoomMemberController extends ABasicController {
         if (!isOwnerOfChatRoom) {
             throw new BadRequestException(ErrorCode.CHAT_ROOM_ERROR_NO_OWNER, "Can not delete member if not owner");
         }
-        if (chatRoomMember.getChatRoom().getChatRoomMembers().size() == 3) {
+        if (chatRoom.getChatRoomMembers().size() == 3) {
             throw new BadRequestException(ErrorCode.CHAT_ROOM_MEMBER_ERROR_KIND_GROUP_HAS_MORE_THAN_3, "number of list members can not less than 2");
         }
-        messageService.deleteDataOfMemberOfChatRoom(chatRoom.getId(), currentUserId);
+        messageService.deleteDataOfMemberOfChatRoom(chatRoom.getId(), chatRoomMember.getMember().getId());
         chatService.sendMsgChatRoomDeleted(chatRoom.getId(), List.of(chatRoomMember.getMember().getId()));
         chatService.sendMsgChatRoomUpdated(chatRoom.getId(), chatRoomMemberRepository.findAllMemberIdsByChatRoomIdAndNotIn(chatRoom.getId(), List.of(chatRoomMember.getMember().getId())));
         return makeSuccessResponse(null, "Delete chat room member success");
@@ -146,11 +150,15 @@ public class ChatRoomMemberController extends ABasicController {
 
     @DeleteMapping(value = "/leave/{chatroomId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ApiMessageDto<String> leave(@PathVariable("chatroomId") Long chatroomId) {
+        Account currentUser = accountRepository.findById(getCurrentUser()).orElse(null);
+        if (currentUser == null) {
+            throw new BadRequestException(ErrorCode.ACCOUNT_ERROR_NOT_FOUND, "Not found current user");
+        }
         ChatRoom chatroom = chatroomRepository.findById(chatroomId).orElse(null);
         if (chatroom == null) {
             throw new BadRequestException(ErrorCode.CHAT_ROOM_ERROR_NOT_FOUND, "Not found room");
         }
-        Long currentUserId = getCurrentUser();
+        Long currentUserId = currentUser.getId();
         boolean isOwnerOfChatRoom = checkOwnerChatRoom(currentUserId, chatroom.getId());
         boolean isMember = checkIsMemberOfChatRoom(currentUserId, chatroomId);
         if (!isMember) {

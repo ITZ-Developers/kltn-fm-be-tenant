@@ -175,17 +175,12 @@ public class ChatRoomController extends ABasicController {
         chatroom.setOwner(owner);
         chatroom.setSettings(FinanceConstant.CHAT_ROOM_SETTING_SAMPLE_DATA);
         chatroom.setKind(FinanceConstant.CHATROOM_KIND_GROUP);
-
-        List<ChatRoomMember> chatRoomMembers = new ArrayList<>();
-        ChatRoomMember chatRoomMemberOwner = new ChatRoomMember();
-        chatRoomMemberOwner.setMember(owner);
-        chatRoomMemberOwner.setChatRoom(chatroom);
-        chatRoomMembers.add(chatRoomMemberOwner);
-
-        List<Account> accounts = accountRepository.findAllByIdInAndStatus(form.getMemberIds(), FinanceConstant.STATUS_ACTIVE);
+        List<Account> accounts = accountRepository.findAllByIdInAndStatusAndIdNot(form.getMemberIds(), FinanceConstant.STATUS_ACTIVE, owner.getId());
         if (accounts.size() < 2) {
             throw new BadRequestException(ErrorCode.CHAT_ROOM_MEMBER_ERROR_KIND_GROUP_HAS_MORE_THAN_3, "number of list members can not less than 2");
         }
+        List<ChatRoomMember> chatRoomMembers = new ArrayList<>();
+        accounts.add(owner);
         for (Account account : accounts) {
             ChatRoomMember newChatRoomMember = new ChatRoomMember();
             newChatRoomMember.setMember(account);
@@ -207,7 +202,7 @@ public class ChatRoomController extends ABasicController {
         }
         chatroom.setOwner(owner);
         chatroom.setKind(FinanceConstant.CHATROOM_KIND_DIRECT_MESSAGE);
-        Account other = accountRepository.findById(form.getAccountId()).orElse(null);
+        Account other = accountRepository.findFirstByIdAndStatusAndIdNot(form.getAccountId(), FinanceConstant.STATUS_ACTIVE, owner.getId()).orElse(null);
         if (other == null) {
             throw new BadRequestException(ErrorCode.ACCOUNT_ERROR_NOT_FOUND, "Not found other");
         }
@@ -233,6 +228,10 @@ public class ChatRoomController extends ABasicController {
 
     @PutMapping(value = "/update", produces = MediaType.APPLICATION_JSON_VALUE)
     public ApiMessageDto<String> update(@Valid @RequestBody UpdateChatRoomForm form, BindingResult bindingResult) {
+        Account currentUser = accountRepository.findById(getCurrentUser()).orElse(null);
+        if (currentUser == null) {
+            throw new BadRequestException(ErrorCode.ACCOUNT_ERROR_NOT_FOUND, "Not found current user");
+        }
         ChatRoom chatroom = chatroomRepository.findById(form.getId()).orElse(null);
         if (chatroom == null) {
             throw new BadRequestException(ErrorCode.CHAT_ROOM_ERROR_NOT_FOUND, "Not found chatroom");
@@ -246,7 +245,7 @@ public class ChatRoomController extends ABasicController {
             throw new BadRequestException(ErrorCode.CHAT_ROOM_MEMBER_ERROR_IS_NOT_OWNER_AND_NOT_ALLOW_UPDATE, "Chat room updated by owner or not owner if allow to update");
         }
         chatRoomMapper.fromUpdateChatRoomFormToEntity(form, chatroom);
-        if(checkIsOwner){
+        if (checkIsOwner) {
             chatroom.setSettings(form.getSettings());
         }
         chatroomRepository.save(chatroom);
@@ -256,6 +255,10 @@ public class ChatRoomController extends ABasicController {
 
     @DeleteMapping(value = "/delete/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ApiMessageDto<String> delete(@PathVariable("id") Long id) {
+        Account currentUser = accountRepository.findById(getCurrentUser()).orElse(null);
+        if (currentUser == null) {
+            throw new BadRequestException(ErrorCode.ACCOUNT_ERROR_NOT_FOUND, "Not found current user");
+        }
         ChatRoom chatroom = chatroomRepository.findById(id).orElse(null);
         if (chatroom == null) {
             throw new BadRequestException(ErrorCode.CHAT_ROOM_ERROR_NOT_FOUND, "Not found chatroom");
@@ -266,7 +269,7 @@ public class ChatRoomController extends ABasicController {
             throw new BadRequestException(ErrorCode.CHAT_ROOM_ERROR_NO_OWNER,"Can not delete if not owner");
         }
         if(FinanceConstant.CHATROOM_KIND_DIRECT_MESSAGE.equals(chatroom.getKind()) && !checkIsMember){
-            throw new BadRequestException(ErrorCode.CHAT_ROOM_ERROR_NO_OWNER, "Can not delete if not owner");
+            throw new BadRequestException(ErrorCode.CHAT_ROOM_ERROR_NO_OWNER, "Can not delete if is not member");
         }
         messageReactionRepository.deleteAllByChatRoomId(id);
         messageRepository.updateParentNullByChatRoomId(id);
