@@ -50,8 +50,10 @@ public interface MessageMapper extends EncryptDecryptMapper {
     List<MessageDto> fromEntityListToMessageDtoListAutoComplete(List<Message> messageList, @Context KeyWrapperDto keyWrapper);
 
     @Mapping(source = "id", target = "id")
+    @Mapping(source = "sender", target = "sender", qualifiedByName = "fromEntityToAccountDtoAutoComplete")
     @Mapping(target = "content", expression = "java(decryptAndEncrypt(keyWrapper, message.getContent()))")
     @Mapping(target = "document", expression = "java(decryptAndEncrypt(keyWrapper, message.getDocument()))")
+    @Mapping(source = "createdDate", target = "createdDate")
     @BeanMapping(ignoreByDefault = true)
     @Named("fromEntityToMessageShortDto")
     MessageDto fromEntityToMessageShortDto(Message message, @Context KeyWrapperDto keyWrapper);
