@@ -60,7 +60,7 @@ public class MessageController extends ABasicController {
     private MessageDto getFormattedMessageDto(Message message) {
         Long currentId = getCurrentUser();
         List<MessageReaction> messageReactions = message.getMessageReactions();
-        List<ChatRoomMember> seenMembers = message.getSeenMembers();
+        List<ChatRoomMember> seenMembers = message.getSeenMembers().stream().filter(seenMember -> !seenMember.getMember().getId().equals(message.getSender().getId())).collect(Collectors.toList());
         List<Account> seenAccounts = seenMembers.stream().map(ChatRoomMember::getMember).collect(Collectors.toList());
         MessageDto dto = messageMapper.fromEntityToMessageDto(message, keyService.getFinanceKeyWrapper());
         dto.setIsSender(Objects.equals(message.getSender().getId(), currentId));
