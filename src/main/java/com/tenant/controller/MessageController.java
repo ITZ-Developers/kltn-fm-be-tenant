@@ -124,7 +124,7 @@ public class MessageController extends ABasicController {
         responseListObj.setTotalElements(listMessage.getTotalElements());
 
         // Update last message for member
-        Message lastMessage = messageRepository.findLastMessageByChatRoomId(chatRoom.getId());
+        Message lastMessage = messageRepository.findLastMessageByChatRoomId(chatRoom.getId()).orElse(null);
         if (lastMessage != null) {
             if (chatRoomMember.getLastReadMessage() == null || lastMessage.getCreatedDate().after(chatRoomMember.getLastReadMessage().getCreatedDate())) {
                 chatRoomMember.setLastReadMessage(lastMessage);

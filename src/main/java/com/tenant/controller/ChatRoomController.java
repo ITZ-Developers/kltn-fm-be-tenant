@@ -20,7 +20,6 @@ import com.tenant.storage.tenant.model.Account;
 import com.tenant.storage.tenant.model.ChatRoom;
 import com.tenant.storage.tenant.model.criteria.ChatRoomCriteria;
 import com.tenant.storage.tenant.repository.*;
-import com.tenant.utils.JSONUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -51,8 +50,6 @@ public class ChatRoomController extends ABasicController {
     @Autowired
     private MessageRepository messageRepository;
     @Autowired
-    private MessageReactionRepository messageReactionRepository;
-    @Autowired
     private MessageMapper messageMapper;
     @Autowired
     private KeyService keyService;
@@ -70,8 +67,10 @@ public class ChatRoomController extends ABasicController {
             throw new BadRequestException(ErrorCode.CHAT_ROOM_ERROR_NOT_FOUND, "Not found chatroom");
         }
         ChatRoomDto dto = chatRoomMapper.fromEntityToChatRoomDto(chatroom);
-        Message lastMessage = messageRepository.findLastMessageByChatRoomId(chatroom.getId());
-        dto.setLastMessage(messageMapper.fromEntityToMessageDto(lastMessage, keyService.getFinanceKeyWrapper()));
+        Message lastMessage = messageRepository.findLastMessageByChatRoomId(chatroom.getId()).orElse(null);
+        if (lastMessage != null) {
+            dto.setLastMessage(messageMapper.fromEntityToMessageDto(lastMessage, keyService.getFinanceKeyWrapper()));
+        }
         dto.setTotalUnreadMessages(chatroomRepository.countUnreadMessagesByChatRoomId(chatroom.getId(), getCurrentUser()));
         if (FinanceConstant.CHATROOM_KIND_DIRECT_MESSAGE.equals(chatroom.getKind())) {
             Account other = chatroomRepository.findOtherMemberInDirectMessages(chatroom.getId(), getCurrentUser(), FinanceConstant.CHATROOM_KIND_DIRECT_MESSAGE);
@@ -271,13 +270,8 @@ public class ChatRoomController extends ABasicController {
         if(FinanceConstant.CHATROOM_KIND_DIRECT_MESSAGE.equals(chatroom.getKind()) && !checkIsMember){
             throw new BadRequestException(ErrorCode.CHAT_ROOM_ERROR_NO_OWNER, "Can not delete if is not member");
         }
-        messageReactionRepository.deleteAllByMessageChatRoomId(id);
-        messageRepository.updateParentNullByChatRoomId(id);
-        chatRoomMemberRepository.updateLastMessageNullByChatRoomId(id);
-        messageRepository.deleteAllByChatRoomId(id);
-        chatRoomMemberRepository.deleteAllByChatRoomId(id);
-        chatroomRepository.deleteById(id);
         chatService.sendMsgChatRoomDeleted(chatroom.getId());
+        messageService.deleteDataOfChatRoom(chatroom.getId());
         return makeSuccessResponse(null, "Delete chatroom success");
     }
 }
