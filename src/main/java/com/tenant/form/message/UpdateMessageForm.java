@@ -10,6 +10,8 @@ public class UpdateMessageForm {
     @NotNull(message = "id cannot be null")
     @ApiModelProperty(required = true)
     private Long id;
+    @NotBlank(message = "content cannot be blank")
+    @ApiModelProperty(required = true)
     private String content;
     private String document;
 }
