@@ -61,9 +61,6 @@ public class GroupController extends ABasicController{
     @GetMapping(value = "/list", produces= MediaType.APPLICATION_JSON_VALUE)
     @PreAuthorize("hasRole('RO_L')")
     public ApiMessageDto<ResponseListDto<List<GroupAdminDto>>> list(GroupCriteria groupCriteria, Pageable pageable) {
-        if (!isCustomer()) {
-            groupCriteria.setIsSystemRole(false);
-        }
         Page<Group> groups = groupRepository.findAll(groupCriteria.getCriteria(), pageable);
         ResponseListDto<List<GroupAdminDto>> responseListObj = new ResponseListDto<>();
         responseListObj.setContent(groupMapper.fromEntityListToGroupAdminDtoList(groups.getContent()));
