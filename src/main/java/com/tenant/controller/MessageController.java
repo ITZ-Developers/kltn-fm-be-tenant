@@ -97,10 +97,7 @@ public class MessageController extends ABasicController {
     @GetMapping(value = "/list", produces = MediaType.APPLICATION_JSON_VALUE)
     public ApiMessageDto<ResponseListDto<List<MessageDto>>> list(MessageCriteria messageCriteria, Pageable pageable) {
         if (messageCriteria.getIsPaged().equals(FinanceConstant.IS_PAGED_FALSE)) {
-            pageable = PageRequest.of(0, pageable.getPageSize(),
-                    Sort.by(Sort.Order.desc("createdDate")));
-        } else if (pageable.getSort().isUnsorted()) {
-            pageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by(Sort.Order.desc("createdDate")));
+            pageable = PageRequest.of(0, Integer.MAX_VALUE);
         }
         if (messageCriteria.getChatRoomId() == null) {
             throw new BadRequestException("Required chatroomId");
