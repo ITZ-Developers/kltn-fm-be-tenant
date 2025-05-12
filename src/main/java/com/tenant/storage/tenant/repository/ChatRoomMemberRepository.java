@@ -26,7 +26,7 @@ public interface ChatRoomMemberRepository extends JpaRepository<ChatRoomMember, 
     @Transactional
     void deleteByChatRoomIdAndMemberId(Long chatroomId, Long memberId);
 
-    @Query("SELECT CASE WHEN COUNT(m) > 0 THEN TRUE ELSE FALSE END " +
+    @Query("SELECT CASE WHEN COUNT(m.id) > 0 THEN TRUE ELSE FALSE END " +
             "FROM ChatRoomMember m " +
             "WHERE m.chatRoom.id = :chatRoomId " +
             "AND m.member.id IN :accountIds")
@@ -44,4 +44,6 @@ public interface ChatRoomMemberRepository extends JpaRepository<ChatRoomMember, 
 
     @Query("SELECT DISTINCT crm.member.id FROM ChatRoomMember crm WHERE crm.chatRoom.id = :chatRoomId AND crm.member.id NOT IN :memberIds")
     List<Long> findAllMemberIdsByChatRoomIdAndNotIn(@Param("chatRoomId") Long chatRoomId, @Param("memberIds") List<Long> memberIds);
+
+    Optional<ChatRoomMember> findFirstByIdOrMemberId(Long id, Long memberId);
 }

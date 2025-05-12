@@ -16,7 +16,7 @@ import java.util.List;
 @Data
 public class ChatRoomMemberCriteria {
     private Long id;
-    private Long roomId;
+    private Long chatRoomId;
     private Long memberId;
     private Integer status;
     private Integer isPaged = FinanceConstant.IS_PAGED_TRUE; // 0: false, 1: true
@@ -27,9 +27,9 @@ public class ChatRoomMemberCriteria {
             if (getId() != null) {
                 predicates.add(cb.equal(root.get("id"), getId()));
             }
-            if (getRoomId() != null) {
+            if (getChatRoomId() != null) {
                 Join<ChatRoomMember, ChatRoom> join = root.join("chatRoom", JoinType.INNER);
-                predicates.add(cb.equal(join.get("id"), getRoomId()));
+                predicates.add(cb.equal(join.get("id"), getChatRoomId()));
             }
             if (getMemberId() != null) {
                 Join<ChatRoomMember, Account> join = root.join("member", JoinType.INNER);

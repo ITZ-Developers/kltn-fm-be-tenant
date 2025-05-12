@@ -7,9 +7,9 @@ import javax.validation.constraints.*;
 import java.util.*;
 @Data
 public class CreateChatRoomMemberForm {
-    @NotNull(message = "roomId cannot be null")
+    @NotNull(message = "chatRoomId cannot be null")
     @ApiModelProperty(required = true)
-    private Long roomId;
+    private Long chatRoomId;
     @NotEmpty(message = "memberIds cannot be empty")
     @ApiModelProperty(required = true)
     private List<Long> memberIds;
