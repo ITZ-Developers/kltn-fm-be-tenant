@@ -15,7 +15,6 @@ public class GroupCriteria {
     private String name;
     private Integer kind;
     private Integer status;
-    private Boolean isSystemRole;
 
     public Specification<Group> getCriteria() {
         return new Specification<Group>() {
@@ -34,9 +33,6 @@ public class GroupCriteria {
                 }
                 if(getStatus() != null){
                     predicates.add(cb.equal(root.get("status"), getStatus()));
-                }
-                if (getIsSystemRole() != null) {
-                    predicates.add(cb.equal(root.get("isSystemRole"), getIsSystemRole()));
                 }
                 return cb.and(predicates.toArray(new Predicate[predicates.size()]));
             }
