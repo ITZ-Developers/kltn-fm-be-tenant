@@ -22,22 +22,5 @@ public interface MessageRepository extends JpaRepository<Message, Long>, JpaSpec
             "AND mess.createdDate = (SELECT MAX(m.createdDate) FROM Message m WHERE m.chatRoom.id = :chatroomId)")
     Message findLastMessageByChatRoomId(@Param("chatroomId") Long chatroomId);
 
-    @Modifying
-    @Query("UPDATE Message mess SET mess.parent = null " +
-            "WHERE mess.parent IS NOT NULL AND mess.chatRoom.id = :chatroomId AND mess.sender = :memberId")
-    void updateParentNullByChatRoomIdAndMemberId(@Param("chatroomId") Long chatRoomId,@Param("memberId") Long memberId);
-
-    @Transactional
-    @Modifying
-    @Query("DELETE FROM Message mess " +
-            "WHERE mess.chatRoom.id = :chatroomId AND mess.sender = :memberId ")
-    void deleteAllByChatRoomIdAndMemberId(Long chatroomId, Long memberId);
-
     Optional<Message> findFirstByIdAndChatRoomId(Long messageId, Long chatroomId);
-
-    @Query("SELECT m " +
-            "FROM Message m " +
-            "WHERE m.chatRoom.id = :chatRoomId AND m.createdDate = " +
-            "(SELECT MAX(m2.createdDate) FROM Message m2 WHERE m2.chatRoom.id = m.chatRoom.id)")
-    Message findLastMessagesByChatRoomId(@Param("chatRoomId") Long chatRoomId);
 }

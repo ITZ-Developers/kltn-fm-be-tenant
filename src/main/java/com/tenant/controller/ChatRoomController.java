@@ -271,7 +271,7 @@ public class ChatRoomController extends ABasicController {
         if(FinanceConstant.CHATROOM_KIND_DIRECT_MESSAGE.equals(chatroom.getKind()) && !checkIsMember){
             throw new BadRequestException(ErrorCode.CHAT_ROOM_ERROR_NO_OWNER, "Can not delete if is not member");
         }
-        messageReactionRepository.deleteAllByChatRoomId(id);
+        messageReactionRepository.deleteAllByMessageChatRoomId(id);
         messageRepository.updateParentNullByChatRoomId(id);
         chatRoomMemberRepository.updateLastMessageNullByChatRoomId(id);
         messageRepository.deleteAllByChatRoomId(id);

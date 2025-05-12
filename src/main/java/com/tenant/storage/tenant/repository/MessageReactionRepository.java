@@ -15,14 +15,7 @@ public interface MessageReactionRepository extends JpaRepository<MessageReaction
     void deleteAllByMessageId(Long messageId);
 
     @Transactional
-    @Modifying
-    @Query("DELETE FROM MessageReaction mr WHERE mr.message.chatRoom.id = :chatRoomId")
-    void deleteAllByChatRoomId(@Param("chatRoomId") Long chatRoomId);
-
-    @Transactional
-    @Modifying
-    @Query("DELETE FROM MessageReaction mr WHERE mr.message.chatRoom.id = :chatRoomId AND mr.account.id = :memberId ")
-    void deleteAllByChatRoomIdAndMemberId(@Param("chatRoomId") Long chatRoomId, @Param("memberId")Long memberId);
+    void deleteAllByMessageChatRoomId(Long chatRoomId);
 
     Optional<MessageReaction> findFirstByMessageIdAndAccountId(Long messageId, Long accountId);
 
