@@ -183,19 +183,11 @@ public class MessageController extends ABasicController {
         Long currentId = getCurrentUser();
         ChatRoom chatroom = message.getChatRoom();
         boolean isMemberOfChatRoom = checkIsMemberOfChatRoom(currentId, message.getChatRoom().getId());
-        boolean isOwnerOfChatRoom = checkOwnerChatRoom(currentId, chatroom.getId());
-        boolean allowSendMessages = messageService.getSettingOfChatRoom(chatroom.getSettings()).getMember_permissions().getAllow_send_messages();
         if (!isMemberOfChatRoom) {
             throw new BadRequestException(ErrorCode.CHAT_ROOM_MEMBER_ERROR_NO_JOIN, "Account no in this room");
         }
         if (!Objects.equals(message.getSender().getId(), getCurrentUser())) {
-            throw new BadRequestException(ErrorCode.MESSAGE_ERROR_NO_OWNER, "Not found message");
-        }
-        if (FinanceConstant.CHATROOM_KIND_GROUP.equals(chatroom.getKind()) && !isOwnerOfChatRoom && !allowSendMessages) {
-            throw new BadRequestException(ErrorCode.CHAT_ROOM_MEMBER_ERROR_IS_NOT_SEND_MESSAGES, "Members unable to update message");
-        }
-        if (!checkIsMemberOfChatRoom(getCurrentUser(), message.getChatRoom().getId())) {
-            throw new BadRequestException(ErrorCode.CHAT_ROOM_MEMBER_ERROR_NO_JOIN, "Account no in this room");
+            throw new BadRequestException(ErrorCode.MESSAGE_ERROR_NO_OWNER, "You are not the sender");
         }
         message.setIsUpdate(true);
         messageRepository.save(message);
@@ -212,17 +204,15 @@ public class MessageController extends ABasicController {
         if (message.getIsDeleted()) {
             throw new BadRequestException(ErrorCode.MESSAGE_ERROR_DELETED, "Message already deleted");
         }
+        if (!Objects.equals(message.getSender().getId(), getCurrentUser())) {
+            throw new BadRequestException(ErrorCode.MESSAGE_ERROR_NO_OWNER, "You are not the sender");
+        }
         Long currentId = getCurrentUser();
         ChatRoom chatroom = message.getChatRoom();
         boolean isMemberOfChatRoom = checkIsMemberOfChatRoom(currentId, message.getChatRoom().getId());
-        boolean isOwnerOfChatRoom = checkOwnerChatRoom(currentId, chatroom.getId());
         if (!isMemberOfChatRoom) {
             throw new BadRequestException(ErrorCode.CHAT_ROOM_MEMBER_ERROR_NO_JOIN, "Account no in this room");
         }
-        if (!isOwnerOfChatRoom && !Objects.equals(message.getSender().getId(), getCurrentUser())) {
-            throw new BadRequestException(ErrorCode.MESSAGE_ERROR_NO_OWNER, "Not found message");
-        }
-        messageReactionRepository.deleteAllByMessageId(id);
         message.setContent(null);
         message.setDocument(null);
         message.setIsDeleted(true);
