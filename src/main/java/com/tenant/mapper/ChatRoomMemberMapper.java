@@ -11,23 +11,12 @@ import java.util.List;
         unmappedTargetPolicy = ReportingPolicy.IGNORE,
         nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
 public interface ChatRoomMemberMapper extends EncryptDecryptMapper {
-
     @Mapping(source = "id", target = "id")
-    @Mapping(source = "chatRoom", target = "room", qualifiedByName = "fromEntityToChatRoomDto")
     @Mapping(source = "member", target = "member", qualifiedByName = "fromEntityToAccountDtoAutoComplete")
-    @Mapping(source = "lastReadMessage", target = "lastReadMessage", qualifiedByName = "fromEntityToMessageDto" )
     @BeanMapping(ignoreByDefault = true)
     @Named("fromEntityToChatRoomMemberDto")
-    ChatRoomMemberDto fromEntityToChatRoomMemberDto(ChatRoomMember chatroommember, @Context KeyWrapperDto keyWrapper);
+    ChatRoomMemberDto fromEntityToChatRoomMemberDto(ChatRoomMember chatroommember);
 
     @IterableMapping(elementTargetType = ChatRoomMemberDto.class, qualifiedByName = "fromEntityToChatRoomMemberDto")
-    List<ChatRoomMemberDto> fromEntityListToChatRoomMemberDtoList(List<ChatRoomMember> chatroommemberList, @Context KeyWrapperDto keyWrapper);
-
-    @Mapping(source = "id", target = "id")
-    @BeanMapping(ignoreByDefault = true)
-    @Named("fromEntityToChatRoomMemberDtoAutoComplete")
-    ChatRoomMemberDto fromEntityToChatRoomMemberDtoAutoComplete(ChatRoomMember chatroommember);
-
-    @IterableMapping(elementTargetType = ChatRoomMemberDto.class, qualifiedByName = "fromEntityToChatRoomMemberDtoAutoComplete")
-    List<ChatRoomMemberDto> fromEntityListToChatRoomMemberDtoListAutoComplete(List<ChatRoomMember> chatroommemberList);
+    List<ChatRoomMemberDto> fromEntityListToChatRoomMemberDtoList(List<ChatRoomMember> chatroommemberList);
 }

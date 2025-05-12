@@ -1,7 +1,6 @@
 package com.tenant.controller;
 
 import com.tenant.constant.FinanceConstant;
-import com.tenant.service.KeyService;
 import com.tenant.service.MessageService;
 import com.tenant.service.chat.ChatService;
 import com.tenant.dto.ApiMessageDto;
@@ -16,13 +15,11 @@ import com.tenant.storage.tenant.model.ChatRoom;
 import com.tenant.storage.tenant.model.ChatRoomMember;
 import com.tenant.storage.tenant.model.criteria.ChatRoomMemberCriteria;
 import com.tenant.storage.tenant.repository.*;
-import com.tenant.utils.JSONUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.web.PageableDefault;
 import org.springframework.http.MediaType;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
@@ -47,35 +44,33 @@ public class ChatRoomMemberController extends ABasicController {
     @Autowired
     private MessageService messageService;
     @Autowired
-    private KeyService keyService;
-    @Autowired
     private ChatService chatService;
 
     @GetMapping(value = "/list", produces = MediaType.APPLICATION_JSON_VALUE)
     public ApiMessageDto<ResponseListDto<List<ChatRoomMemberDto>>> list(ChatRoomMemberCriteria chatRoomMemberCriteria, Pageable pageable) {
+        if (chatRoomMemberCriteria.getChatRoomId() == null) {
+            throw new BadRequestException("chatRoomId is required");
+        }
+        ChatRoom chatroom = chatroomRepository.findById(chatRoomMemberCriteria.getChatRoomId()).orElse(null);
+        if (chatroom == null) {
+            throw new BadRequestException(ErrorCode.CHAT_ROOM_ERROR_NOT_FOUND, "Not found room");
+        }
         if (chatRoomMemberCriteria.getIsPaged().equals(FinanceConstant.IS_PAGED_FALSE)) {
             pageable = PageRequest.of(0, Integer.MAX_VALUE);
         }
         Page<ChatRoomMember> listChatRoomMember = chatRoomMemberRepository.findAll(chatRoomMemberCriteria.getCriteria(), pageable);
         ResponseListDto<List<ChatRoomMemberDto>> responseListObj = new ResponseListDto<>();
-        responseListObj.setContent(chatRoomMemberMapper.fromEntityListToChatRoomMemberDtoList(listChatRoomMember.getContent(), keyService.getFinanceKeyWrapper()));
+        List<ChatRoomMemberDto> dtos = chatRoomMemberMapper.fromEntityListToChatRoomMemberDtoList(listChatRoomMember.getContent());
+        Long ownerId = chatroom.getOwner().getId();
+        Long currentUserId = getCurrentUser();
+        for (ChatRoomMemberDto dto : dtos) {
+            dto.setIsOwner(ownerId.equals(dto.getMember().getId()));
+            dto.setIsYou(currentUserId.equals(dto.getMember().getId()));
+        }
+        responseListObj.setContent(dtos);
         responseListObj.setTotalPages(listChatRoomMember.getTotalPages());
         responseListObj.setTotalElements(listChatRoomMember.getTotalElements());
         return makeSuccessResponse(responseListObj, "Get list chat room member success");
-    }
-
-    @GetMapping(value = "/auto-complete", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ApiMessageDto<ResponseListDto<List<ChatRoomMemberDto>>> autoComplete(ChatRoomMemberCriteria chatRoomMemberCriteria, @PageableDefault Pageable pageable) {
-        chatRoomMemberCriteria.setStatus(FinanceConstant.STATUS_ACTIVE);
-        if (chatRoomMemberCriteria.getIsPaged().equals(FinanceConstant.IS_PAGED_FALSE)) {
-            pageable = PageRequest.of(0, Integer.MAX_VALUE);
-        }
-        Page<ChatRoomMember> listChatRoomMember = chatRoomMemberRepository.findAll(chatRoomMemberCriteria.getCriteria(), pageable);
-        ResponseListDto<List<ChatRoomMemberDto>> responseListObj = new ResponseListDto<>();
-        responseListObj.setContent(chatRoomMemberMapper.fromEntityListToChatRoomMemberDtoListAutoComplete(listChatRoomMember.getContent()));
-        responseListObj.setTotalPages(listChatRoomMember.getTotalPages());
-        responseListObj.setTotalElements(listChatRoomMember.getTotalElements());
-        return makeSuccessResponse(responseListObj, "Get list auto-complete chatroom success");
     }
 
     @PostMapping(value = "/create", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -85,7 +80,7 @@ public class ChatRoomMemberController extends ABasicController {
             throw new BadRequestException(ErrorCode.ACCOUNT_ERROR_NOT_FOUND, "Not found current user");
         }
         List<ChatRoomMember> chatRoomMembers = new ArrayList<>();
-        ChatRoom chatroom = chatroomRepository.findById(form.getRoomId()).orElse(null);
+        ChatRoom chatroom = chatroomRepository.findById(form.getChatRoomId()).orElse(null);
         if (chatroom == null) {
             throw new BadRequestException(ErrorCode.CHAT_ROOM_ERROR_NOT_FOUND, "Not found room");
         }
@@ -124,23 +119,23 @@ public class ChatRoomMemberController extends ABasicController {
     @DeleteMapping(value = "/delete/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ApiMessageDto<String> delete(@PathVariable("id") Long id, BindingResult bindingResult) {
         Long currentUserId = getCurrentUser();
-        ChatRoomMember chatRoomMember = chatRoomMemberRepository.findById(id).orElse(null);
+        ChatRoomMember chatRoomMember = chatRoomMemberRepository.findFirstByIdOrMemberId(id, id).orElse(null);
         if (chatRoomMember == null) {
             throw new BadRequestException(ErrorCode.CHAT_ROOM_MEMBER_ERROR_NOT_FOUND, "Not found chat room member");
+        }
+        if (chatRoomMember.getMember().getId().equals(currentUserId)) {
+            throw new BadRequestException(ErrorCode.CHAT_ROOM_MEMBER_IS_OWNER, "Cannot delete yourself");
         }
         ChatRoom chatRoom = chatRoomMember.getChatRoom();
         if (!Objects.equals(chatRoom.getKind(), FinanceConstant.CHATROOM_KIND_GROUP)) {
             throw new BadRequestException(ErrorCode.CHAT_ROOM_ERROR_NOT_KIND_GROUP, "Chat room kind is not kind group");
         }
-        if (!Objects.equals(chatRoomMember.getMember().getId(),chatRoom.getOwner().getId())) {
-            throw new BadRequestException(ErrorCode.CHAT_ROOM_MEMBER_IS_OWNER, "Not found chat room member");
+        if (Objects.equals(chatRoomMember.getMember().getId(), chatRoom.getOwner().getId())) {
+            throw new BadRequestException(ErrorCode.CHAT_ROOM_MEMBER_IS_OWNER, "Not allowed to delete owner");
         }
-        boolean isOwnerOfChatRoom = checkOwnerChatRoom(currentUserId, chatRoomMember.getChatRoom().getId());
+        boolean isOwnerOfChatRoom = checkOwnerChatRoom(currentUserId, chatRoom.getId());
         if (!isOwnerOfChatRoom) {
             throw new BadRequestException(ErrorCode.CHAT_ROOM_ERROR_NO_OWNER, "Can not delete member if not owner");
-        }
-        if (chatRoom.getChatRoomMembers().size() == 3) {
-            throw new BadRequestException(ErrorCode.CHAT_ROOM_MEMBER_ERROR_KIND_GROUP_HAS_MORE_THAN_3, "number of list members can not less than 2");
         }
         chatService.sendMsgChatRoomDeleted(chatRoom.getId(), List.of(chatRoomMember.getMember().getId()));
         chatService.sendMsgChatRoomUpdated(chatRoom.getId(), chatRoomMemberRepository.findAllMemberIdsByChatRoomIdAndNotIn(chatRoom.getId(), List.of(chatRoomMember.getMember().getId())));
@@ -163,9 +158,6 @@ public class ChatRoomMemberController extends ABasicController {
         boolean isMember = checkIsMemberOfChatRoom(currentUserId, chatroomId);
         if (!isMember) {
             throw new BadRequestException(ErrorCode.CHAT_ROOM_MEMBER_ERROR_NO_JOIN, "Current user is not member of chatroom");
-        }
-        if (chatroom.getChatRoomMembers().size() == 3 && !isOwnerOfChatRoom) {
-            throw new BadRequestException(ErrorCode.CHAT_ROOM_MEMBER_ERROR_KIND_GROUP_HAS_MORE_THAN_3, "number of list members can not less than 2");
         }
         if (!FinanceConstant.CHATROOM_KIND_GROUP.equals(chatroom.getKind())) {
             throw new BadRequestException(ErrorCode.CHAT_ROOM_ERROR_NOT_KIND_GROUP, "Chat room is not kind group");
