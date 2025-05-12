@@ -12,7 +12,6 @@ import java.util.List;
 import java.util.Optional;
 
 public interface ChatRoomMemberRepository extends JpaRepository<ChatRoomMember, Long>, JpaSpecificationExecutor<ChatRoomMember> {
-    List<ChatRoomMember> findAllByChatRoomId(Long chatRoomId);
     @Transactional
     void deleteAllByChatRoomId(Long id);
     boolean existsByChatRoomIdAndMemberId(Long chatroomId, Long memberId);
@@ -24,15 +23,7 @@ public interface ChatRoomMemberRepository extends JpaRepository<ChatRoomMember, 
             "WHERE crm.lastReadMessage IS NOT NULL AND crm.chatRoom.id = :chatRoomId")
     void updateLastMessageNullByChatRoomId(@Param("chatRoomId") Long chatRoomId);
 
-    @Modifying
     @Transactional
-    @Query("UPDATE ChatRoomMember crm " +
-            "SET crm.lastReadMessage = NULL " +
-            "WHERE crm.lastReadMessage.id = :messageId")
-    void updateLastMessageNullByMessageId(@Param("messageId") Long messageId);
-
-    @Transactional
-    @Modifying
     void deleteByChatRoomIdAndMemberId(Long chatroomId, Long memberId);
 
     @Query("SELECT CASE WHEN COUNT(m) > 0 THEN TRUE ELSE FALSE END " +

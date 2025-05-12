@@ -23,7 +23,7 @@ public class MessageService {
     private ObjectMapper objectMapper;
 
     public void deleteDataOfChatRoom(Long chatroomId){
-        messageReactionRepository.deleteAllByChatRoomId(chatroomId);
+        messageReactionRepository.deleteAllByMessageChatRoomId(chatroomId);
         messageRepository.updateParentNullByChatRoomId(chatroomId);
         chatRoomMemberRepository.deleteAllByChatRoomId(chatroomId);
         messageRepository.deleteAllByChatRoomId(chatroomId);
