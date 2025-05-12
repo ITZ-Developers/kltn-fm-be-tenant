@@ -142,9 +142,9 @@ public class ChatRoomMemberController extends ABasicController {
         if (chatRoom.getChatRoomMembers().size() == 3) {
             throw new BadRequestException(ErrorCode.CHAT_ROOM_MEMBER_ERROR_KIND_GROUP_HAS_MORE_THAN_3, "number of list members can not less than 2");
         }
-        messageService.deleteDataOfMemberOfChatRoom(chatRoom.getId(), chatRoomMember.getMember().getId());
         chatService.sendMsgChatRoomDeleted(chatRoom.getId(), List.of(chatRoomMember.getMember().getId()));
         chatService.sendMsgChatRoomUpdated(chatRoom.getId(), chatRoomMemberRepository.findAllMemberIdsByChatRoomIdAndNotIn(chatRoom.getId(), List.of(chatRoomMember.getMember().getId())));
+        messageService.deleteDataOfMemberOfChatRoom(chatRoom.getId(), chatRoomMember.getMember().getId());
         return makeSuccessResponse(null, "Delete chat room member success");
     }
 
@@ -171,12 +171,12 @@ public class ChatRoomMemberController extends ABasicController {
             throw new BadRequestException(ErrorCode.CHAT_ROOM_ERROR_NOT_KIND_GROUP, "Chat room is not kind group");
         }
         if (isOwnerOfChatRoom) {
-            messageService.deleteDataOfChatRoom(chatroomId);
             chatService.sendMsgChatRoomDeleted(chatroom.getId());
+            messageService.deleteDataOfChatRoom(chatroomId);
         } else {
-            messageService.deleteDataOfMemberOfChatRoom(chatroomId, currentUserId);
             chatService.sendMsgChatRoomDeleted(chatroomId, List.of(currentUserId));
             chatService.sendMsgChatRoomUpdated(chatroomId, chatRoomMemberRepository.findAllMemberIdsByChatRoomIdAndNotIn(chatroomId, List.of(currentUserId)));
+            messageService.deleteDataOfMemberOfChatRoom(chatroomId, currentUserId);
         }
         return makeSuccessResponse(null, "Create chat room member success");
     }

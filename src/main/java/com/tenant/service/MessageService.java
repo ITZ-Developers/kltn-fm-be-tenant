@@ -24,7 +24,6 @@ public class MessageService {
 
     public void deleteDataOfChatRoom(Long chatroomId){
         messageReactionRepository.deleteAllByMessageChatRoomId(chatroomId);
-        messageRepository.updateParentNullByChatRoomId(chatroomId);
         chatRoomMemberRepository.deleteAllByChatRoomId(chatroomId);
         messageRepository.deleteAllByChatRoomId(chatroomId);
         chatroomRepository.deleteById(chatroomId);

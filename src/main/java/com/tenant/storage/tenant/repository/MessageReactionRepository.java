@@ -17,8 +17,6 @@ public interface MessageReactionRepository extends JpaRepository<MessageReaction
     @Transactional
     void deleteAllByMessageChatRoomId(Long chatRoomId);
 
-    Optional<MessageReaction> findFirstByMessageIdAndAccountId(Long messageId, Long accountId);
-
     @Transactional
     void deleteAllByAccountIdAndMessageId(Long accountId, Long messageId);
 }
