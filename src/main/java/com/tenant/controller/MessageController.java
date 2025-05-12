@@ -200,8 +200,6 @@ public class MessageController extends ABasicController {
         if (!checkIsMemberOfChatRoom(getCurrentUser(), message.getChatRoom().getId())) {
             throw new BadRequestException(ErrorCode.CHAT_ROOM_MEMBER_ERROR_NO_JOIN, "Account no in this room");
         }
-        message.setDocument(form.getDocument());
-        message.setContent(form.getContent());
         message.setIsUpdate(true);
         messageRepository.save(message);
         chatService.broadcastMessageUpdated(chatroom.getId(), message.getId());
