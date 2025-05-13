@@ -172,7 +172,7 @@ public class ChatRoomController extends ABasicController {
             throw new BadRequestException(ErrorCode.ACCOUNT_ERROR_NOT_FOUND, "Not found owner");
         }
         chatroom.setOwner(owner);
-        chatroom.setSettings(FinanceConstant.CHAT_ROOM_SETTING_SAMPLE_DATA);
+        chatroom.setSettings(form.getSettings());
         chatroom.setKind(FinanceConstant.CHATROOM_KIND_GROUP);
         List<Account> accounts = accountRepository.findAllByIdInAndStatusAndIdNot(form.getMemberIds(), FinanceConstant.STATUS_ACTIVE, owner.getId());
         if (accounts.size() < 2) {
