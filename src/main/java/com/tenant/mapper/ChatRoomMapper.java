@@ -5,7 +5,6 @@ import com.tenant.form.chatroom.CreateChatRoomForm;
 import com.tenant.form.chatroom.UpdateChatRoomForm;
 import com.tenant.storage.tenant.model.ChatRoom;
 import org.mapstruct.*;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -20,6 +19,7 @@ public interface ChatRoomMapper {
 
     @Mapping(source = "name", target = "name")
     @Mapping(source = "avatar", target = "avatar")
+    @Mapping(source = "settings", target = "settings")
     @BeanMapping(ignoreByDefault = true)
     void fromUpdateChatRoomFormToEntity(UpdateChatRoomForm updateChatRoomForm, @MappingTarget ChatRoom chatroom);
 

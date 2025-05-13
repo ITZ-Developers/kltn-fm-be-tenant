@@ -1,8 +1,6 @@
 package com.tenant.form.chatroom;
 
-import com.tenant.constant.FinanceConstant;
 import com.tenant.dto.chatroom.settings.SettingJsonFormat;
-import com.tenant.validation.ChatroomKind;
 import com.tenant.validation.ValidJsonField;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -17,7 +15,8 @@ public class UpdateChatRoomForm {
     private Long id;
     private String name;
     private String avatar;
-    @ValidJsonField(classType = SettingJsonFormat.class, allowNull = true)
-    @ApiModelProperty(name = "settings", required = false)
-    private String settings = FinanceConstant.CHAT_ROOM_SETTING_SAMPLE_DATA;
+    @NotBlank(message = "settings cannot be blank")
+    @ValidJsonField(classType = SettingJsonFormat.class)
+    @ApiModelProperty(name = "settings")
+    private String settings;
 }
