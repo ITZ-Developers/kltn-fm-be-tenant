@@ -5,7 +5,6 @@ import com.tenant.validation.ValidJsonField;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
-import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
 @Data
@@ -15,8 +14,6 @@ public class UpdateChatRoomForm {
     private Long id;
     private String name;
     private String avatar;
-    @NotBlank(message = "settings cannot be blank")
-    @ValidJsonField(classType = SettingJsonFormat.class)
-    @ApiModelProperty(name = "settings")
+    @ValidJsonField(classType = SettingJsonFormat.class, allowNull = true)
     private String settings;
 }
