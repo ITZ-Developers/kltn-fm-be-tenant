@@ -235,7 +235,7 @@ public class AccountCriteria implements Serializable{
                 if (getIgnoreChatRoomId() != null) {
                     Subquery<Long> subquery = query.subquery(Long.class);
                     Root<ChatRoomMember> subRoot = subquery.from(ChatRoomMember.class);
-                    subquery.select(subRoot.get("account").get("id"))
+                    subquery.select(subRoot.get("member").get("id"))
                             .where(cb.equal(subRoot.get("chatRoom").get("id"), getIgnoreChatRoomId()));
                     predicates.add(cb.not(root.get("id").in(subquery)));
                 }

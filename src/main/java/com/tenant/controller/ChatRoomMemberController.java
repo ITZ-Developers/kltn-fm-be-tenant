@@ -117,7 +117,7 @@ public class ChatRoomMemberController extends ABasicController {
     }
 
     @DeleteMapping(value = "/delete/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ApiMessageDto<String> delete(@PathVariable("id") Long id, BindingResult bindingResult) {
+    public ApiMessageDto<String> delete(@PathVariable("id") Long id) {
         Long currentUserId = getCurrentUser();
         ChatRoomMember chatRoomMember = chatRoomMemberRepository.findFirstByIdOrMemberId(id, id).orElse(null);
         if (chatRoomMember == null) {
