@@ -19,7 +19,6 @@ public interface ChatRoomMapper {
 
     @Mapping(source = "name", target = "name")
     @Mapping(source = "avatar", target = "avatar")
-    @Mapping(source = "settings", target = "settings")
     @BeanMapping(ignoreByDefault = true)
     void fromUpdateChatRoomFormToEntity(UpdateChatRoomForm updateChatRoomForm, @MappingTarget ChatRoom chatroom);
 
