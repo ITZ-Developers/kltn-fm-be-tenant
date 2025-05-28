@@ -52,7 +52,7 @@ public class DocumentService {
             if (isNotValidDocumentList(dto)) {
                 return null;
             }
-            return documentString;
+            return parsedDocument;
         } catch (Exception e) {
             return null;
         }
