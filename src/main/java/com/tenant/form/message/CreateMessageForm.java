@@ -11,8 +11,6 @@ public class CreateMessageForm {
     @NotNull(message = "chatroomId cannot be null")
     @ApiModelProperty(required = true)
     private Long chatRoomId;
-    @NotBlank(message = "content cannot be blank")
-    @ApiModelProperty(required = true)
     private String content;
     private String document;
     private Long parentMessageId;

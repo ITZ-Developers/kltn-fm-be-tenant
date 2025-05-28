@@ -40,6 +40,10 @@ public class DocumentService {
         return false;
     }
 
+    public boolean isNotValidDocumentString(String documentString, String secretKey) {
+        return validateDocumentString(parseJSONDocumentToDocumentDtoList(documentString, secretKey));
+    }
+
     public boolean isNotValidCreateDocumentString(String documentString) {
         return validateDocumentString(parseJSONDocumentToDocumentDtoList(documentString, null));
     }

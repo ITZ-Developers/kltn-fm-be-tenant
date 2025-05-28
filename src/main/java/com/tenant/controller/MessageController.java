@@ -10,6 +10,7 @@ import com.tenant.form.message.CreateMessageForm;
 import com.tenant.form.message.UpdateMessageForm;
 import com.tenant.mapper.AccountMapper;
 import com.tenant.mapper.MessageMapper;
+import com.tenant.service.DocumentService;
 import com.tenant.service.KeyService;
 import com.tenant.service.MessageService;
 import com.tenant.service.chat.ChatService;
@@ -56,6 +57,8 @@ public class MessageController extends ABasicController {
     private AccountMapper accountMapper;
     @Autowired
     private MessageService messageService;
+    @Autowired
+    private DocumentService documentService;
 
     private MessageDto getFormattedMessageDto(Message message) {
         Long currentId = getCurrentUser();
@@ -134,8 +137,11 @@ public class MessageController extends ABasicController {
 
     @PostMapping(value = "/create", produces = MediaType.APPLICATION_JSON_VALUE)
     public ApiMessageDto<String> create(@Valid @RequestBody CreateMessageForm form, BindingResult bindingResult) {
-        if (!StringUtils.isNotBlank(form.getContent()) && !StringUtils.isNotBlank(form.getDocument())) {
+        if (StringUtils.isBlank(form.getContent()) && StringUtils.isBlank(form.getDocument())) {
             throw new BadRequestException("Required content or document");
+        }
+        if (StringUtils.isNotBlank(form.getDocument()) && documentService.isNotValidDocumentString(form.getDocument(), keyService.getUserSecretKey())) {
+            throw new BadRequestException("Invalid document format");
         }
         Message message = messageMapper.fromCreateMessageFormToEncryptEntity(form, keyService.getUserKeyWrapper());
         Long currentId = getCurrentUser();
@@ -172,8 +178,11 @@ public class MessageController extends ABasicController {
 
     @PutMapping(value = "/update", produces = MediaType.APPLICATION_JSON_VALUE)
     public ApiMessageDto<String> update(@Valid @RequestBody UpdateMessageForm form, BindingResult bindingResult) {
-        if (!StringUtils.isNotBlank(form.getContent()) && !StringUtils.isNotBlank(form.getDocument())) {
+        if (StringUtils.isBlank(form.getContent()) && StringUtils.isBlank(form.getDocument())) {
             throw new BadRequestException("Required content or document");
+        }
+        if (StringUtils.isNotBlank(form.getDocument()) && documentService.isNotValidDocumentString(form.getDocument(), keyService.getUserSecretKey())) {
+            throw new BadRequestException("Invalid document format");
         }
         Message message = messageRepository.findById(form.getId()).orElse(null);
         if (message == null) {
