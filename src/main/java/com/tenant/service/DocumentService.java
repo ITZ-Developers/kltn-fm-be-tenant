@@ -21,6 +21,8 @@ public class DocumentService {
     private ObjectMapper objectMapper;
     @Autowired
     private FinanceApiService financeApiService;
+    @Autowired
+    private KeyService keyService;
 
     public List<DocumentDto> parseJSONDocumentToDocumentDtoList(String document, String secretKey) {
         try {
@@ -40,8 +42,20 @@ public class DocumentService {
         return false;
     }
 
-    public boolean isNotValidDocumentString(String documentString, String secretKey) {
-        return validateDocumentString(parseJSONDocumentToDocumentDtoList(documentString, secretKey));
+    public String decryptDocumentString(String decryptKey, String documentString) {
+        try {
+            String parsedDocument = AESUtils.decrypt(decryptKey, documentString, FinanceConstant.AES_ZIP_ENABLE);
+            List<DocumentDto> dto = objectMapper.readValue(parsedDocument, new TypeReference<>() {});
+            if (dto == null || dto.isEmpty()) {
+                return null;
+            }
+            if (validateDocumentString(dto)) {
+                return documentString;
+            }
+            return null;
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     public boolean isNotValidCreateDocumentString(String documentString) {

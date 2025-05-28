@@ -17,6 +17,7 @@ import com.tenant.service.chat.ChatService;
 import com.tenant.storage.tenant.model.*;
 import com.tenant.storage.tenant.model.criteria.MessageCriteria;
 import com.tenant.storage.tenant.repository.*;
+import com.tenant.utils.AESUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -137,13 +138,14 @@ public class MessageController extends ABasicController {
 
     @PostMapping(value = "/create", produces = MediaType.APPLICATION_JSON_VALUE)
     public ApiMessageDto<String> create(@Valid @RequestBody CreateMessageForm form, BindingResult bindingResult) {
-        if (StringUtils.isBlank(form.getContent()) && StringUtils.isBlank(form.getDocument())) {
+        String content = AESUtils.decrypt(keyService.getUserSecretKey(), form.getContent(), FinanceConstant.AES_ZIP_ENABLE);
+        String document = documentService.decryptDocumentString(keyService.getUserSecretKey(), form.getDocument());
+        if (StringUtils.isBlank(content) && StringUtils.isBlank(document)) {
             throw new BadRequestException("Required content or document");
         }
-        if (StringUtils.isNotBlank(form.getDocument()) && documentService.isNotValidDocumentString(form.getDocument(), keyService.getUserSecretKey())) {
-            throw new BadRequestException("Invalid document format");
-        }
-        Message message = messageMapper.fromCreateMessageFormToEncryptEntity(form, keyService.getUserKeyWrapper());
+        Message message = new Message();
+        message.setContent(AESUtils.encrypt(keyService.getFinanceSecretKey(), content, FinanceConstant.AES_ZIP_ENABLE));
+        message.setDocument(AESUtils.encrypt(keyService.getFinanceSecretKey(), document, FinanceConstant.AES_ZIP_ENABLE));
         Long currentId = getCurrentUser();
         Account sender = accountRepository.findById(currentId).orElse(null);
         if (sender == null) {
@@ -178,17 +180,17 @@ public class MessageController extends ABasicController {
 
     @PutMapping(value = "/update", produces = MediaType.APPLICATION_JSON_VALUE)
     public ApiMessageDto<String> update(@Valid @RequestBody UpdateMessageForm form, BindingResult bindingResult) {
-        if (StringUtils.isBlank(form.getContent()) && StringUtils.isBlank(form.getDocument())) {
+        String content = AESUtils.decrypt(keyService.getUserSecretKey(), form.getContent(), FinanceConstant.AES_ZIP_ENABLE);
+        String document = documentService.decryptDocumentString(keyService.getUserSecretKey(), form.getDocument());
+        if (StringUtils.isBlank(content) && StringUtils.isBlank(document)) {
             throw new BadRequestException("Required content or document");
-        }
-        if (StringUtils.isNotBlank(form.getDocument()) && documentService.isNotValidDocumentString(form.getDocument(), keyService.getUserSecretKey())) {
-            throw new BadRequestException("Invalid document format");
         }
         Message message = messageRepository.findById(form.getId()).orElse(null);
         if (message == null) {
             throw new BadRequestException(ErrorCode.MESSAGE_ERROR_NOT_FOUND, "Not found message");
         }
-        messageMapper.fromUpdateMessageFormToEncryptEntity(form, message, keyService.getUserKeyWrapper());
+        message.setContent(AESUtils.encrypt(keyService.getFinanceSecretKey(), content, FinanceConstant.AES_ZIP_ENABLE));
+        message.setDocument(AESUtils.encrypt(keyService.getFinanceSecretKey(), document, FinanceConstant.AES_ZIP_ENABLE));
         Long currentId = getCurrentUser();
         ChatRoom chatroom = message.getChatRoom();
         boolean isMemberOfChatRoom = checkIsMemberOfChatRoom(currentId, message.getChatRoom().getId());
