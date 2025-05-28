@@ -33,7 +33,7 @@ public class DocumentService {
         }
     }
 
-    private boolean validateDocumentString(List<DocumentDto> documentDtos) {
+    private boolean isNotValidDocumentList(List<DocumentDto> documentDtos) {
         for (DocumentDto documentDto : documentDtos) {
             if (StringUtils.isBlank(documentDto.getName()) || StringUtils.isBlank(documentDto.getUrl())) {
                 return true;
@@ -49,17 +49,17 @@ public class DocumentService {
             if (dto == null || dto.isEmpty()) {
                 return null;
             }
-            if (validateDocumentString(dto)) {
-                return documentString;
+            if (isNotValidDocumentList(dto)) {
+                return null;
             }
-            return null;
+            return documentString;
         } catch (Exception e) {
             return null;
         }
     }
 
     public boolean isNotValidCreateDocumentString(String documentString) {
-        return validateDocumentString(parseJSONDocumentToDocumentDtoList(documentString, null));
+        return isNotValidDocumentList(parseJSONDocumentToDocumentDtoList(documentString, null));
     }
 
     public boolean isNotValidUpdateDocumentString(String updateDocumentString, String entityDocumentString, String secretKey) {
@@ -67,7 +67,7 @@ public class DocumentService {
         List<DocumentDto> updateDocuments = updateDocumentString != null ?
                 parseJSONDocumentToDocumentDtoList(updateDocumentString, null) :
                 Collections.emptyList();
-        if (validateDocumentString(updateDocuments)) {
+        if (isNotValidDocumentList(updateDocuments)) {
             return true;
         }
         List<DocumentDto> documentsNotInUpdate = new ArrayList<>(entityDocuments);
