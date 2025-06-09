@@ -51,6 +51,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @RestController
@@ -204,6 +205,7 @@ public class AccountController extends ABasicController {
                 return makeErrorResponse(ErrorCode.ACCOUNT_ERROR_PHONE_EXISTED, "Phone existed");
             }
         }
+        boolean isGroupChanged = !Objects.equals(updateAccountAdminForm.getGroupId(), account.getGroup().getId());
         Group group = groupRepository.findById(updateAccountAdminForm.getGroupId()).orElse(null);
         if (group == null) {
             return makeErrorResponse(ErrorCode.GROUP_ERROR_NOT_FOUND, "Not found group");
@@ -226,7 +228,7 @@ public class AccountController extends ABasicController {
         account.setGroup(group);
         account.setDepartment(department);
         accountRepository.save(account);
-        if (isLock) {
+        if (isLock || isGroupChanged) {
             sessionService.sendMessageLockAccount(CacheConstant.KEY_EMPLOYEE, account.getUsername());
             sessionService.sendMessageLockAccount(CacheConstant.KEY_MOBILE, account.getUsername());
         }
