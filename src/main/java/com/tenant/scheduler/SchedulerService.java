@@ -12,6 +12,7 @@ import com.tenant.storage.tenant.repository.ServiceRepository;
 import com.tenant.storage.tenant.repository.TransactionRepository;
 import com.tenant.utils.AESUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -75,11 +76,15 @@ public class SchedulerService {
     }
 
     public void checkServiceExpired() {
+        String key = keyService.getFinanceSecretKey();
+        if (StringUtils.isBlank(key)) {
+            log.error("[SERVICE SCHEDULER] ERROR-NOT-READY");
+        }
         List<ServiceReminderDto> serviceReminderDtoList = serviceRepository.getListServiceReminderDto();
         List<Notification> notifications = new ArrayList<>();
         for (ServiceReminderDto dto : serviceReminderDtoList) {
             if (dto.getAccountId() != null) {
-                String serviceName = AESUtils.decrypt(keyService.getFinanceSecretKey(), dto.getServiceName(), FinanceConstant.AES_ZIP_ENABLE);
+                String serviceName = AESUtils.decrypt(key, dto.getServiceName(), FinanceConstant.AES_ZIP_ENABLE);
                 String dayOrDays = dto.getNumberOfDueDays() != 1 ? " days" : " day";
                 String message = "Your " + serviceName + " service is due in " + dto.getNumberOfDueDays() + dayOrDays;
                 notifications.add(createNotification(dto.getServiceId(), dto.getAccountId(), message));
