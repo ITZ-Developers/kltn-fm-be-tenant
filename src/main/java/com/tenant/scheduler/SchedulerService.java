@@ -79,6 +79,7 @@ public class SchedulerService {
         String key = keyService.getFinanceSecretKey();
         if (StringUtils.isBlank(key)) {
             log.error("[SERVICE SCHEDULER] ERROR-NOT-READY");
+            return;
         }
         List<ServiceReminderDto> serviceReminderDtoList = serviceRepository.getListServiceReminderDto();
         List<Notification> notifications = new ArrayList<>();
