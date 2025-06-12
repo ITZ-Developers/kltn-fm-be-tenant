@@ -106,7 +106,7 @@ public class ChatRoomController extends ABasicController {
                 .collect(Collectors.toMap(ChatRoomMemberCountInterface::getChatRoomId, ChatRoomMemberCountInterface::getMemberCount));
         Map<Long, Message> lastMessageMap = chatroomRepository.findLastMessagesByChatRoomIds(chatRoomIds)
                 .stream()
-                .collect(Collectors.toMap(ChatRoomLastMessageInterface::getChatRoomId, ChatRoomLastMessageInterface::getLastMessage));
+                .collect(Collectors.toMap(ChatRoomLastMessageInterface::getChatRoomId, ChatRoomLastMessageInterface::getLastMessage, (m1, m2) -> m1.getId() > m2.getId() ? m1 : m2));
         Map<Long, Long> unreadCountMap = chatroomRepository.countUnreadMessages(chatRoomIds, currentUserId)
                 .stream()
                 .collect(Collectors.toMap(ChatRoomUnreadCountInterface::getChatRoomId, ChatRoomUnreadCountInterface::getUnreadCount));
