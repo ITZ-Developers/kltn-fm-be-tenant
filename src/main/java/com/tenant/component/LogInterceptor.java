@@ -57,6 +57,7 @@ public class LogInterceptor implements HandlerInterceptor {
             "/v1/account/clear-key"
     );
     static final List<String> WHITE_LIST = List.of(
+            "/v1/account/profile"
     );
 
     @Override
@@ -67,7 +68,7 @@ public class LogInterceptor implements HandlerInterceptor {
         if (!isUrlAllowed(request.getRequestURI()) && StringUtils.isBlank(concurrentMap.get(FinanceConstant.PRIVATE_KEY))) {
             return handleUnauthorized(response, ErrorCode.GENERAL_ERROR_SYSTEM_NOT_READY, "Not ready");
         }
-        if (!isAllowed(request, WHITE_LIST) && !isValidSession()) {
+        if (isAllowed(request, WHITE_LIST) && !isValidSession()) {
             return handleUnauthorized(response, ErrorCode.GENERAL_ERROR_INVALID_SESSION, "Invalid session");
         }
         if (isAllowed(request, INTERNAL_REQUEST) && !httpService.validateInternalRequest(request)) {
