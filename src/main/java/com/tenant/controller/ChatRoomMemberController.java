@@ -2,7 +2,6 @@ package com.tenant.controller;
 
 import com.tenant.constant.FinanceConstant;
 import com.tenant.service.MessageService;
-import com.tenant.service.chat.ChatService;
 import com.tenant.dto.ApiMessageDto;
 import com.tenant.dto.ErrorCode;
 import com.tenant.dto.ResponseListDto;
@@ -10,6 +9,7 @@ import com.tenant.dto.chatroomMember.ChatRoomMemberDto;
 import com.tenant.exception.BadRequestException;
 import com.tenant.form.chatroomMember.CreateChatRoomMemberForm;
 import com.tenant.mapper.ChatRoomMemberMapper;
+import com.tenant.service.chat.SocketClientChatService;
 import com.tenant.storage.tenant.model.Account;
 import com.tenant.storage.tenant.model.ChatRoom;
 import com.tenant.storage.tenant.model.ChatRoomMember;
@@ -44,7 +44,7 @@ public class ChatRoomMemberController extends ABasicController {
     @Autowired
     private MessageService messageService;
     @Autowired
-    private ChatService chatService;
+    private SocketClientChatService chatService;
 
     @GetMapping(value = "/list", produces = MediaType.APPLICATION_JSON_VALUE)
     public ApiMessageDto<ResponseListDto<List<ChatRoomMemberDto>>> list(ChatRoomMemberCriteria chatRoomMemberCriteria, Pageable pageable) {

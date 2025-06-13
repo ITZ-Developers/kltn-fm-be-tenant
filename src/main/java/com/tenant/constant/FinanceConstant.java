@@ -17,6 +17,8 @@ public class FinanceConstant {
     public static final String CMD_SCHEDULE_SERVICE = "CMD_SCHEDULE_SERVICE";
     public static final String CMD_LOCK_DEVICE = "CMD_LOCK_DEVICE";
     public static final String CMD_LOGIN_QR_CODE = "CMD_LOGIN_QR_CODE";
+
+    // CHAT SERVICE CMD
     public static final String CMD_CHAT_ROOM_CREATED = "CMD_CHAT_ROOM_CREATED";
     public static final String CMD_CHAT_ROOM_UPDATED = "CMD_CHAT_ROOM_UPDATED";
     public static final String CMD_CHAT_ROOM_DELETED = "CMD_CHAT_ROOM_DELETED";
