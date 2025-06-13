@@ -29,11 +29,24 @@ public class MyWebSocketClient extends WebSocketClient {
     @Override
     public void onClose(int code, String reason, boolean remote) {
         log.error("WebSocket closed: " + reason);
+        attemptReconnectWithDelay();
     }
 
     @Override
     public void onError(Exception ex) {
         log.error("WebSocket error:");
-        ex.printStackTrace();
+        attemptReconnectWithDelay();
+    }
+
+    private void attemptReconnectWithDelay() {
+        new Thread(() -> {
+            try {
+                Thread.sleep(5000);
+                this.reconnect();
+                log.warn("🔄 Attempted reconnect...");
+            } catch (InterruptedException e) {
+                log.error("Reconnect interrupted", e);
+            }
+        }).start();
     }
 }
