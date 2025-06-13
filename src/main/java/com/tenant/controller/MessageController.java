@@ -40,8 +40,6 @@ public class MessageController extends ABasicController {
     @Autowired
     private ChatRoomMemberRepository chatRoomMemberRepository;
     @Autowired
-    private MessageReactionRepository messageReactionRepository;
-    @Autowired
     private MessageRepository messageRepository;
     @Autowired
     private MessageMapper messageMapper;
@@ -136,7 +134,7 @@ public class MessageController extends ABasicController {
     }
 
     @PostMapping(value = "/create", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ApiMessageDto<String> create(@Valid @RequestBody CreateMessageForm form, BindingResult bindingResult) {
+    public ApiMessageDto<MessageDto> create(@Valid @RequestBody CreateMessageForm form, BindingResult bindingResult) {
         String content = AESUtils.decrypt(keyService.getUserSecretKey(), form.getContent(), FinanceConstant.AES_ZIP_ENABLE);
         String document = documentService.decryptDocumentString(keyService.getUserSecretKey(), form.getDocument());
         if (StringUtils.isBlank(content) && StringUtils.isBlank(document)) {
@@ -174,7 +172,8 @@ public class MessageController extends ABasicController {
         message.setChatRoom(chatRoom);
         messageRepository.save(message);
         chatService.sendMessageToChatRoomId(chatRoom.getId(), message.getId());
-        return makeSuccessResponse(null, "Create message success");
+        MessageDto dto = getFormattedMessageDto(message);
+        return makeSuccessResponse(dto, "Create message success");
     }
 
     @PutMapping(value = "/update", produces = MediaType.APPLICATION_JSON_VALUE)
