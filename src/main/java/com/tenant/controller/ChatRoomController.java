@@ -14,7 +14,7 @@ import com.tenant.mapper.ChatRoomMapper;
 import com.tenant.mapper.MessageMapper;
 import com.tenant.service.KeyService;
 import com.tenant.service.MessageService;
-import com.tenant.service.chat.ChatService;
+import com.tenant.service.chat.SocketClientChatService;
 import com.tenant.storage.tenant.model.*;
 import com.tenant.storage.tenant.model.Account;
 import com.tenant.storage.tenant.model.ChatRoom;
@@ -54,7 +54,7 @@ public class ChatRoomController extends ABasicController {
     @Autowired
     private KeyService keyService;
     @Autowired
-    private ChatService chatService;
+    private SocketClientChatService chatService;
     @Autowired
     private SessionService sessionService;
     @Autowired
