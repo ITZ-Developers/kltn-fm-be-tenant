@@ -81,8 +81,6 @@ public class LogInterceptor implements HandlerInterceptor {
         } else {
             TenantDBContext.setCurrentTenant(tenantName);
         }
-        long startTime = System.currentTimeMillis();
-        request.setAttribute("startTime", startTime);
         log.debug("Starting call url: [" + getUrl(request) + "]");
         return true;
     }
@@ -90,14 +88,6 @@ public class LogInterceptor implements HandlerInterceptor {
     @Override
     public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) throws Exception {
         HandlerInterceptor.super.afterCompletion(request, response, handler, ex);
-        long startTime = (Long) request.getAttribute("startTime");
-        long endTime = System.currentTimeMillis();
-        long executeTime = endTime - startTime;
-        log.debug("Complete [" + getUrl(request) + "] executeTime : " + executeTime + "ms");
-        if (ex != null) {
-            log.error("afterCompletion>> " + ex.getMessage());
-
-        }
     }
 
     /**
