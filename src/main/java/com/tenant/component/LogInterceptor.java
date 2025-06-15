@@ -16,14 +16,12 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Lazy;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.util.AntPathMatcher;
 import org.springframework.web.servlet.HandlerInterceptor;
 
-import javax.servlet.DispatcherType;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -62,9 +60,6 @@ public class LogInterceptor implements HandlerInterceptor {
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws IOException {
-        if (DispatcherType.REQUEST.name().equals(request.getDispatcherType().name())
-                && request.getMethod().equals(HttpMethod.GET.name())) {
-        }
         if (!isUrlAllowed(request.getRequestURI()) && StringUtils.isBlank(concurrentMap.get(FinanceConstant.PRIVATE_KEY))) {
             return handleUnauthorized(response, ErrorCode.GENERAL_ERROR_SYSTEM_NOT_READY, "Not ready");
         }
@@ -81,28 +76,12 @@ public class LogInterceptor implements HandlerInterceptor {
         } else {
             TenantDBContext.setCurrentTenant(tenantName);
         }
-        log.debug("Starting call url: [" + getUrl(request) + "]");
         return true;
     }
 
     @Override
     public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) throws Exception {
         HandlerInterceptor.super.afterCompletion(request, response, handler, ex);
-    }
-
-    /**
-     * get full url request
-     *
-     * @param req
-     * @return
-     */
-    private static String getUrl(HttpServletRequest req) {
-        String reqUrl = req.getRequestURL().toString();
-        String queryString = req.getQueryString();   // d=789
-        if (!StringUtils.isEmpty(queryString)) {
-            reqUrl += "?" + queryString;
-        }
-        return reqUrl;
     }
 
     private boolean isUrlAllowed(String url) {
