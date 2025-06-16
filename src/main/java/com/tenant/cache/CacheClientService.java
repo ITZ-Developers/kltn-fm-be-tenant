@@ -35,7 +35,7 @@ public class CacheClientService {
         if (CacheConstant.KEY_ADMIN.equals(keyType)) {
             return PREFIX_KEY_ADMIN + username;
         } else if (CacheConstant.KEY_CUSTOMER.equals(keyType)) {
-            return PREFIX_KEY_CUSTOMER + username;
+            return PREFIX_KEY_CUSTOMER + username + ":" + tenantName;
         } else if (CacheConstant.KEY_EMPLOYEE.equals(keyType)) {
             return PREFIX_KEY_EMPLOYEE + tenantName + ":" + username;
         } else {

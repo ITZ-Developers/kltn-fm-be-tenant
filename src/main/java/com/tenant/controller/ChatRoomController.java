@@ -126,7 +126,7 @@ public class ChatRoomController extends ABasicController {
                 if (otherMember != null) {
                     dto.setName(otherMember.getFullName());
                     dto.setAvatar(otherMember.getAvatarPath());
-                    dto.setLastLogin(sessionService.getLastLoginByAccount(otherMember));
+                    dto.setLastLogin(otherMember.getLastLogin());
                 }
             }
             Message lastMessage = lastMessageMap.get(chatRoom.getId());
