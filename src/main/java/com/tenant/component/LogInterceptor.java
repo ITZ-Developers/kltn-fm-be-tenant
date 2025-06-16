@@ -122,7 +122,7 @@ public class LogInterceptor implements HandlerInterceptor {
         if (SecurityConstant.GRANT_TYPE_EMPLOYEE.equals(grantType)) {
             key = cacheClientService.getKeyString(CacheConstant.KEY_EMPLOYEE, username, tenantName);
         } else if (SecurityConstant.GRANT_TYPE_CUSTOMER.equals(grantType)) {
-            key = cacheClientService.getKeyString(CacheConstant.KEY_CUSTOMER, username, null);
+            key = cacheClientService.getKeyString(CacheConstant.KEY_CUSTOMER, username, tenantName);
         } else if (SecurityConstant.GRANT_TYPE_MOBILE.equals(grantType)) {
             key = cacheClientService.getKeyString(CacheConstant.KEY_MOBILE, username, tenantName);
         } else {

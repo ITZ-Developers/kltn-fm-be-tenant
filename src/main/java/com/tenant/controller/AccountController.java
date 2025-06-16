@@ -129,7 +129,7 @@ public class AccountController extends ABasicController {
         Page<Account> accounts = accountRepository.findAll(accountCriteria.getCriteria(), pageable);
         ResponseListDto<List<AccountAdminDto>> responseListObj = new ResponseListDto<>();
         List<AccountAdminDto> dtos = accountMapper.fromEntityListToAccountAdminDtoList(accounts.getContent());
-        sessionService.mappingLastLoginForListAccounts(dtos);
+//        sessionService.mappingLastLoginForListAccounts(dtos);
         responseListObj.setContent(dtos);
         responseListObj.setTotalPages(accounts.getTotalPages());
         responseListObj.setTotalElements(accounts.getTotalElements());
