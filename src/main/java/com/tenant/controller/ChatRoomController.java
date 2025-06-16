@@ -31,6 +31,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -86,9 +87,14 @@ public class ChatRoomController extends ABasicController {
         return makeSuccessResponse(dto, "Get chatroom success");
     }
 
-    /**
-     * @return rooms for getCurrentUser
-     */
+    private LocalDateTime getSortDate(ChatRoomDto dto) {
+        if (dto.getLastMessage() != null) {
+            return dto.getLastMessage().getCreatedDate();
+        } else {
+            return dto.getCreatedDate();
+        }
+    }
+
     @GetMapping(value = "/list", produces = MediaType.APPLICATION_JSON_VALUE)
     public ApiMessageDto<ResponseListDto<List<ChatRoomDto>>> list(ChatRoomCriteria chatroomCriteria, Pageable pageable) {
         ResponseListDto<List<ChatRoomDto>> responseListObj = new ResponseListDto<>();
@@ -135,14 +141,7 @@ public class ChatRoomController extends ABasicController {
             }
             dto.setTotalUnreadMessages(unreadCountMap.getOrDefault(chatRoom.getId(), 0L));
             return dto;
-        }).sorted(Comparator.comparing((ChatRoomDto dto) -> dto.getLastMessage() == null)
-                .thenComparing(dto -> {
-                    if (dto.getLastMessage() == null) {
-                        return dto.getCreatedDate();
-                    } else {
-                        return dto.getLastMessage().getCreatedDate();
-                    }
-                }, Comparator.reverseOrder())).collect(Collectors.toList());
+        }).sorted(Comparator.comparing(this::getSortDate, Comparator.reverseOrder())).collect(Collectors.toList());
 
         responseListObj.setContent(dtos);
         responseListObj.setTotalPages(chatRoomPage.getTotalPages());
