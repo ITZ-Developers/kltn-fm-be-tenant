@@ -170,6 +170,6 @@ public class ChatRoomMemberController extends ABasicController {
             chatService.sendMsgChatRoomUpdated(chatroomId, chatRoomMemberRepository.findAllMemberIdsByChatRoomIdAndNotIn(chatroomId, List.of(currentUserId)));
             messageService.deleteDataOfMemberOfChatRoom(chatroomId, currentUserId);
         }
-        return makeSuccessResponse(null, "Create chat room member success");
+        return makeSuccessResponse(null, "Leave chat room success");
     }
 }
